@@ -12,6 +12,8 @@ import AppLayout from "./pages/app/AppLayout";
 import Campaigns from "./pages/app/Campaigns";
 import Templates from "./pages/app/Templates";
 import Metrics from "./pages/app/Metrics";
+import Integrations from "./pages/app/Integrations";
+import MetaCallback from "./pages/app/MetaCallback";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +39,8 @@ const App = () => (
               <Route path="campaigns" element={<Campaigns />} />
               <Route path="templates" element={<Templates />} />
               <Route path="metrics" element={<Metrics />} />
+              <Route path="integrations" element={<Integrations />} />
+              <Route path="integrations/meta/callback" element={<MetaCallback />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
