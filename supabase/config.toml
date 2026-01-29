@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.meta-sync-assets]
 verify_jwt = false
+
+[functions.meta-oauth-url]
+verify_jwt = false
+
+[functions.meta-oauth-callback]
+verify_jwt = false

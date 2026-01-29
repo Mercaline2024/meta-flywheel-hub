@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { BarChart3, Megaphone, MessageSquareText, LogOut } from "lucide-react";
+import { BarChart3, Megaphone, MessageSquareText, PlugZap, LogOut } from "lucide-react";
 
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ const items = [
   { title: "Campañas", url: "/app/campaigns", icon: Megaphone },
   { title: "Plantillas", url: "/app/templates", icon: MessageSquareText },
   { title: "Métricas", url: "/app/metrics", icon: BarChart3 },
+  { title: "Integraciones", url: "/app/integrations", icon: PlugZap },
 ];
 
 export default function MetaSidebar() {

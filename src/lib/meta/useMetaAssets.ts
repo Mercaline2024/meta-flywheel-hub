@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 
@@ -18,6 +18,7 @@ export type MetaAdAccount = {
 async function syncAssets() {
   const { error } = await supabase.functions.invoke("meta-sync-assets", { body: {} });
   if (error) throw error;
+  return true;
 }
 
 async function fetchBms(): Promise<MetaBusinessManager[]> {
@@ -41,31 +42,30 @@ async function fetchAdAccounts(metaBmId?: string | null): Promise<MetaAdAccount[
 }
 
 export function useMetaAssets(metaBmId?: string | null) {
-  const sync = useQuery({
-    queryKey: ["meta", "sync-assets"],
-    queryFn: async () => {
-      await syncAssets();
-      return true;
+  const qc = useQueryClient();
+
+  const sync = useMutation({
+    mutationFn: syncAssets,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["meta", "bms"] });
+      qc.invalidateQueries({ queryKey: ["meta", "ad-accounts"] });
     },
-    retry: false,
-    staleTime: 0,
   });
 
   const bms = useQuery({
     queryKey: ["meta", "bms"],
     queryFn: fetchBms,
-    enabled: !sync.isLoading,
   });
 
   const adAccounts = useQuery({
     queryKey: ["meta", "ad-accounts", metaBmId ?? "all"],
     queryFn: () => fetchAdAccounts(metaBmId),
-    enabled: !sync.isLoading,
   });
 
   return {
-    syncing: sync.isLoading,
+    syncing: sync.isPending,
     syncError: sync.error,
+    syncAssets: sync.mutateAsync,
     bms,
     adAccounts,
   };

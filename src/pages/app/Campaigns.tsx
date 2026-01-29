@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Activity, Building2, Filter, Layers3 } from "lucide-react";
+import { Activity, Building2, Filter, Layers3, RefreshCcw } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -110,7 +110,7 @@ export default function Campaigns() {
                   No pude sincronizar datos reales de Meta.
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     <Button asChild size="sm" variant="secondary">
-                      <Link to="/auth">Reintentar login</Link>
+                      <Link to="/app/integrations">Ir a Integraciones</Link>
                     </Button>
                   </div>
                 </div>
@@ -137,9 +137,22 @@ export default function Campaigns() {
                   )}
                 </SelectContent>
               </Select>
-              {!assets.syncing && bmOptions.length === 0 ? (
-                <div className="text-xs text-muted-foreground">Tip: inicia sesión con Facebook para traer tus BMs reales.</div>
-              ) : null}
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => assets.syncAssets()}
+                  disabled={assets.syncing}
+                  className="gap-2"
+                >
+                  <RefreshCcw className="h-4 w-4" aria-hidden="true" />
+                  Sincronizar
+                </Button>
+                {bmOptions.length === 0 ? (
+                  <span className="text-xs text-muted-foreground">Conecta Meta en Integraciones para traer BMs/cuentas.</span>
+                ) : null}
+              </div>
             </div>
           </CardContent>
         </Card>
