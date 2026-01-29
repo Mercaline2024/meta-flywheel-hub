@@ -8,26 +8,31 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AdAccountMultiSelect } from "@/components/metacontrol/AdAccountMultiSelect";
 import { useMetaAssets } from "@/lib/meta/useMetaAssets";
 
-type Campaign = {
-  id: string;
-  name: string;
-  objective: "Leads" | "Ventas" | "Tráfico";
-  status: "Activa" | "Pausada";
-};
+import { useMetaCampaigns } from "@/lib/meta/useMetaCampaigns";
 
-const demoCampaigns: Campaign[] = [
-  { id: "c1", name: "Q1 · Lead Gen · WhatsApp", objective: "Leads", status: "Activa" },
-  { id: "c2", name: "Remarketing · Catálogo", objective: "Ventas", status: "Activa" },
-  { id: "c3", name: "Brand Lift · Always On", objective: "Tráfico", status: "Pausada" },
-  { id: "c4", name: "Promos · Fin de mes", objective: "Ventas", status: "Activa" },
-];
+function labelObjective(objective?: string) {
+  const o = (objective ?? "").toUpperCase();
+  if (o.includes("LEAD")) return "Leads";
+  if (o.includes("CONVERSION")) return "Ventas";
+  if (o.includes("TRAFFIC")) return "Tráfico";
+  return objective ? objective : "—";
+}
+
+function labelStatus(status?: string, effectiveStatus?: string) {
+  const s = (effectiveStatus ?? status ?? "").toUpperCase();
+  if (s.includes("ACTIVE")) return "Activa";
+  if (s.includes("PAUSED")) return "Pausada";
+  if (s.includes("ARCHIVED")) return "Archivada";
+  return status ? status : "—";
+}
 
 export default function Campaigns() {
   const [bm, setBm] = useState<string | null>(null);
-  const [adAccount, setAdAccount] = useState<string | null>(null);
-  const [selectedIds, setSelectedIds] = useState<Record<string, boolean>>({ c1: true, c2: false, c3: false, c4: true });
+  const [adAccountsSelected, setAdAccountsSelected] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Record<string, boolean>>({});
 
   const assets = useMetaAssets(bm);
   const bmOptions = assets.bms.data ?? [];
@@ -38,13 +43,23 @@ export default function Campaigns() {
   }, [bm, bmOptions]);
 
   useEffect(() => {
-    if (!adAccount && adAccountOptions.length > 0) setAdAccount(adAccountOptions[0].meta_ad_account_id);
-  }, [adAccount, adAccountOptions]);
+    // Cuando cambie el BM, resetea selección de cuentas (para evitar mezclar cuentas de otro BM)
+    setAdAccountsSelected([]);
+    setSelectedIds({});
+  }, [bm]);
+
+  const campaignsQuery = useMetaCampaigns(adAccountsSelected);
+  const campaigns = campaignsQuery.data ?? [];
+
+  useEffect(() => {
+    // Si las campañas cambian (por cambio de cuenta), limpia selección
+    setSelectedIds({});
+  }, [adAccountsSelected.join(",")]);
 
   const selectedCount = useMemo(() => Object.values(selectedIds).filter(Boolean).length, [selectedIds]);
   const selectedCampaigns = useMemo(
-    () => demoCampaigns.filter((c) => selectedIds[c.id]),
-    [selectedIds],
+    () => campaigns.filter((c) => selectedIds[c.id]),
+    [campaigns, selectedIds],
   );
 
   const metrics = useMemo(() => {
@@ -119,24 +134,25 @@ export default function Campaigns() {
 
             <div className="space-y-2">
               <span className="text-xs font-medium text-muted-foreground">Cuenta publicitaria</span>
-              <Select value={adAccount ?? ""} onValueChange={(v) => setAdAccount(v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona una cuenta" />
-                </SelectTrigger>
-                <SelectContent>
-                  {adAccountOptions.length === 0 ? (
+              {adAccountOptions.length === 0 ? (
+                <Select value="__empty" onValueChange={() => undefined}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sin cuentas (elige BM)" />
+                  </SelectTrigger>
+                  <SelectContent>
                     <SelectItem value="__empty" disabled>
                       Sin cuentas (elige BM)
                     </SelectItem>
-                  ) : (
-                    adAccountOptions.map((a) => (
-                      <SelectItem key={a.meta_ad_account_id} value={a.meta_ad_account_id}>
-                        {a.name}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <AdAccountMultiSelect
+                  options={adAccountOptions}
+                  value={adAccountsSelected}
+                  onChange={setAdAccountsSelected}
+                  placeholder="Selecciona cuenta(s)"
+                />
+              )}
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 <Button
                   type="button"
@@ -149,10 +165,30 @@ export default function Campaigns() {
                   <RefreshCcw className="h-4 w-4" aria-hidden="true" />
                   Sincronizar
                 </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  disabled={adAccountsSelected.length === 0 || campaignsQuery.isFetching}
+                  onClick={() => campaignsQuery.refetch()}
+                >
+                  Cargar campañas
+                </Button>
                 {bmOptions.length === 0 ? (
                   <span className="text-xs text-muted-foreground">Conecta Meta en Integraciones para traer BMs/cuentas.</span>
                 ) : null}
               </div>
+              {campaignsQuery.isFetching ? <div className="text-xs text-muted-foreground">Cargando campañas…</div> : null}
+              {campaignsQuery.error ? (
+                <div className="rounded-lg border bg-secondary/40 p-3 text-sm text-muted-foreground">
+                  No pude cargar campañas reales.
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <Button asChild size="sm" variant="secondary">
+                      <Link to="/app/integrations">Revisar Integraciones</Link>
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </CardContent>
         </Card>
@@ -166,34 +202,47 @@ export default function Campaigns() {
             <CardDescription>Selección múltiple con estado visible.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {demoCampaigns.map((c) => {
-              const checked = !!selectedIds[c.id];
-              return (
-                <label
-                  key={c.id}
-                  className="flex cursor-pointer items-start justify-between gap-3 rounded-lg border bg-background/60 p-4 transition-all duration-200 hover:bg-accent/10"
-                >
-                  <div className="flex items-start gap-3">
-                    <Checkbox
-                      checked={checked}
-                      onCheckedChange={(v) => {
-                        setSelectedIds((prev) => ({ ...prev, [c.id]: Boolean(v) }));
-                      }}
-                      aria-label={`Seleccionar ${c.name}`}
-                    />
-                    <div>
-                      <div className="font-medium">{c.name}</div>
-                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                        <Badge variant="secondary">{c.objective}</Badge>
-                        <span>{c.status}</span>
+            {adAccountsSelected.length === 0 ? (
+              <div className="rounded-lg border bg-secondary/40 p-3 text-sm text-muted-foreground">
+                Selecciona una o más cuentas publicitarias para cargar campañas.
+              </div>
+            ) : campaigns.length === 0 ? (
+              <div className="rounded-lg border bg-secondary/40 p-3 text-sm text-muted-foreground">
+                No hay campañas para las cuentas seleccionadas (o aún no las cargaste).
+              </div>
+            ) : (
+              campaigns.map((c) => {
+                const checked = !!selectedIds[c.id];
+                const objective = labelObjective(c.objective);
+                const status = labelStatus(c.status, c.effective_status);
+
+                return (
+                  <label
+                    key={c.id}
+                    className="flex cursor-pointer items-start justify-between gap-3 rounded-lg border bg-background/60 p-4 transition-all duration-200 hover:bg-accent/10"
+                  >
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={(v) => {
+                          setSelectedIds((prev) => ({ ...prev, [c.id]: Boolean(v) }));
+                        }}
+                        aria-label={`Seleccionar ${c.name ?? c.id}`}
+                      />
+                      <div>
+                        <div className="font-medium">{c.name ?? `Campaña ${c.id}`}</div>
+                        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                          <Badge variant="secondary">{objective}</Badge>
+                          <span>{status}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <span className="text-xs text-muted-foreground">ID: {c.id}</span>
-                </label>
-              );
-            })}
+                    <span className="text-xs text-muted-foreground">ID: {c.id}</span>
+                  </label>
+                );
+              })
+            )}
 
             <Separator />
 
