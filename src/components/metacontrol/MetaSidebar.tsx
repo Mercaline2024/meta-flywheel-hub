@@ -15,6 +15,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const items = [
   { title: "Campañas", url: "/app/campaigns", icon: Megaphone },
@@ -60,12 +61,13 @@ export default function MetaSidebar() {
         <Button
           variant="ghost"
           className="w-full justify-start"
-          onClick={() => {
-            toast({
-              title: "Modo demo",
-              description: "Sesión cerrada. Cuando conectes Meta, esto cerrará tu sesión real.",
-            });
-            navigate("/");
+          onClick={async () => {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+              toast({ title: "No se pudo cerrar sesión", description: error.message });
+              return;
+            }
+            navigate("/auth");
           }}
         >
           <LogOut aria-hidden="true" />

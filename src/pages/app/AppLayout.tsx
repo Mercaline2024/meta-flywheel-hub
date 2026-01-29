@@ -5,8 +5,11 @@ import MetaSidebar from "@/components/metacontrol/MetaSidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/auth/AuthProvider";
 
 export default function AppLayout() {
+  const { user } = useAuth();
+
   return (
     <SidebarProvider defaultOpen>
       <div className="min-h-screen w-full">
@@ -24,7 +27,8 @@ export default function AppLayout() {
                 </div>
 
                 <div className="ml-auto flex items-center gap-2">
-                  <Badge variant="secondary">Demo</Badge>
+                  <Badge variant="secondary">Sesión activa</Badge>
+                  {user?.email ? <span className="hidden text-xs text-muted-foreground sm:inline">{user.email}</span> : null}
                 </div>
               </div>
             </header>
