@@ -14,7 +14,108 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      meta_ad_accounts: {
+        Row: {
+          created_at: string
+          id: string
+          meta_ad_account_id: string
+          meta_bm_id: string | null
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          meta_ad_account_id: string
+          meta_bm_id?: string | null
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          meta_ad_account_id?: string
+          meta_bm_id?: string | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      meta_business_managers: {
+        Row: {
+          created_at: string
+          id: string
+          meta_bm_id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          meta_bm_id: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          meta_bm_id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      meta_connections: {
+        Row: {
+          access_token: string | null
+          ad_account_sync_at: string | null
+          bm_sync_at: string | null
+          created_at: string
+          id: string
+          provider: string
+          refresh_token: string | null
+          scope: string | null
+          token_received_at: string
+          token_type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          ad_account_sync_at?: string | null
+          bm_sync_at?: string | null
+          created_at?: string
+          id?: string
+          provider?: string
+          refresh_token?: string | null
+          scope?: string | null
+          token_received_at?: string
+          token_type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          ad_account_sync_at?: string | null
+          bm_sync_at?: string | null
+          created_at?: string
+          id?: string
+          provider?: string
+          refresh_token?: string | null
+          scope?: string | null
+          token_received_at?: string
+          token_type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

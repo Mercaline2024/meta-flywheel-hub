@@ -2,6 +2,7 @@ import * as React from "react";
 import type { Session, User } from "@supabase/supabase-js";
 
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 type AuthContextValue = {
   session: Session | null;
@@ -24,6 +25,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(nextSession);
       setUser(nextSession?.user ?? null);
       setLoading(false);
+
+      // Store provider token securely (async work deferred to avoid auth deadlocks)
+      if (nextSession?.provider_token) {
+        const providerToken = nextSession.provider_token;
+        const refreshToken = nextSession.provider_refresh_token;
+
+        setTimeout(() => {
+          supabase.functions
+            .invoke("meta-store-token", {
+              body: {
+                provider: "facebook",
+                access_token: providerToken,
+                refresh_token: refreshToken ?? undefined,
+              },
+            })
+            .then(({ error }) => {
+              if (error) {
+                toast({
+                  title: "Conectado, pero sin token",
+                  description:
+                    "No pude guardar el token de Meta para sincronizar BMs/cuentas. Revisa configuración del proveedor y reintenta.",
+                });
+              }
+            })
+            .catch(() => {
+              // Avoid noisy errors
+            });
+        }, 0);
+      }
     });
 
     // THEN check current session
