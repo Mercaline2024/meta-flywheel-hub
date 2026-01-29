@@ -23,6 +23,14 @@ function requireEnv(name: string) {
   return v;
 }
 
+function requireEnvAny(names: string[]) {
+  for (const n of names) {
+    const v = Deno.env.get(n);
+    if (v) return v;
+  }
+  throw new Error(`${names[0]} is not configured`);
+}
+
 async function fetchAllPages<T>(url: string, accessToken: string): Promise<T[]> {
   const out: T[] = [];
   let next: string | undefined = url;
@@ -68,7 +76,8 @@ Deno.serve(async (req) => {
     }
 
     const SUPABASE_URL = requireEnv("SUPABASE_URL");
-    const SUPABASE_ANON_KEY = requireEnv("SUPABASE_PUBLISHABLE_KEY");
+    // Edge runtime exposes SUPABASE_ANON_KEY (preferred). Keep fallback for older setups.
+    const SUPABASE_ANON_KEY = requireEnvAny(["SUPABASE_ANON_KEY", "SUPABASE_PUBLISHABLE_KEY"]);
     const SUPABASE_SERVICE_ROLE_KEY = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
 
     const token = authHeader.replace("Bearer ", "");
