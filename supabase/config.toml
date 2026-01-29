@@ -1,1 +1,7 @@
 project_id = "uftfqhpragdpjsixqqrc"
+
+[functions.meta-store-token]
+verify_jwt = false
+
+[functions.meta-sync-assets]
+verify_jwt = false

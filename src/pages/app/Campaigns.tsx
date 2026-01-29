@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { Activity, Building2, Filter, Layers3 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useMetaAssets } from "@/lib/meta/useMetaAssets";
 
 type Campaign = {
   id: string;
@@ -23,9 +25,21 @@ const demoCampaigns: Campaign[] = [
 ];
 
 export default function Campaigns() {
-  const [bm, setBm] = useState("bm-1");
-  const [adAccount, setAdAccount] = useState("act-1");
+  const [bm, setBm] = useState<string | null>(null);
+  const [adAccount, setAdAccount] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Record<string, boolean>>({ c1: true, c2: false, c3: false, c4: true });
+
+  const assets = useMetaAssets(bm);
+  const bmOptions = assets.bms.data ?? [];
+  const adAccountOptions = assets.adAccounts.data ?? [];
+
+  useEffect(() => {
+    if (!bm && bmOptions.length > 0) setBm(bmOptions[0].meta_bm_id);
+  }, [bm, bmOptions]);
+
+  useEffect(() => {
+    if (!adAccount && adAccountOptions.length > 0) setAdAccount(adAccountOptions[0].meta_ad_account_id);
+  }, [adAccount, adAccountOptions]);
 
   const selectedCount = useMemo(() => Object.values(selectedIds).filter(Boolean).length, [selectedIds]);
   const selectedCampaigns = useMemo(
@@ -71,30 +85,61 @@ export default function Campaigns() {
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <span className="text-xs font-medium text-muted-foreground">Business Manager</span>
-              <Select value={bm} onValueChange={setBm}>
+              <Select value={bm ?? ""} onValueChange={(v) => setBm(v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecciona un BM" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="bm-1">BM · Agencia Norte</SelectItem>
-                  <SelectItem value="bm-2">BM · Retail Central</SelectItem>
-                  <SelectItem value="bm-3">BM · Consultoría</SelectItem>
+                  {bmOptions.length === 0 ? (
+                    <SelectItem value="__empty" disabled>
+                      Sin BMs (conecta Meta)
+                    </SelectItem>
+                  ) : (
+                    bmOptions.map((b) => (
+                      <SelectItem key={b.meta_bm_id} value={b.meta_bm_id}>
+                        {b.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
+
+              {assets.syncing ? <div className="text-xs text-muted-foreground">Sincronizando BMs…</div> : null}
+              {assets.syncError ? (
+                <div className="rounded-lg border bg-secondary/40 p-3 text-sm text-muted-foreground">
+                  No pude sincronizar datos reales de Meta.
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <Button asChild size="sm" variant="secondary">
+                      <Link to="/auth">Reintentar login</Link>
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
             </div>
 
             <div className="space-y-2">
               <span className="text-xs font-medium text-muted-foreground">Cuenta publicitaria</span>
-              <Select value={adAccount} onValueChange={setAdAccount}>
+              <Select value={adAccount ?? ""} onValueChange={(v) => setAdAccount(v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecciona una cuenta" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="act-1">act_1001 · LATAM</SelectItem>
-                  <SelectItem value="act-2">act_1002 · ES</SelectItem>
-                  <SelectItem value="act-3">act_1003 · US</SelectItem>
+                  {adAccountOptions.length === 0 ? (
+                    <SelectItem value="__empty" disabled>
+                      Sin cuentas (elige BM)
+                    </SelectItem>
+                  ) : (
+                    adAccountOptions.map((a) => (
+                      <SelectItem key={a.meta_ad_account_id} value={a.meta_ad_account_id}>
+                        {a.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
+              {!assets.syncing && bmOptions.length === 0 ? (
+                <div className="text-xs text-muted-foreground">Tip: inicia sesión con Facebook para traer tus BMs reales.</div>
+              ) : null}
             </div>
           </CardContent>
         </Card>
