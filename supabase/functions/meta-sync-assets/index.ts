@@ -169,8 +169,17 @@ Deno.serve(async (req) => {
       }
     }
 
-    if (adAccountRows.length > 0) {
-      const { error: upsertActError } = await admin.from("meta_ad_accounts").upsert(adAccountRows, {
+    // De-dupe rows before upserts to avoid: "ON CONFLICT DO UPDATE command cannot affect row a second time"
+    const adAccountRowsUnique = Array.from(
+      new Map(adAccountRows.map((r) => [`${r.user_id}:${r.meta_ad_account_id}`, r])).values(),
+    );
+
+    const wabaRowsUnique = Array.from(
+      new Map(wabaRows.map((r) => [`${r.user_id}:${r.waba_id}`, r])).values(),
+    );
+
+    if (adAccountRowsUnique.length > 0) {
+      const { error: upsertActError } = await admin.from("meta_ad_accounts").upsert(adAccountRowsUnique, {
         onConflict: "user_id,meta_ad_account_id",
       });
       if (upsertActError) {
@@ -178,8 +187,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    if (wabaRows.length > 0) {
-      const { error: upsertWabaError } = await admin.from("meta_whatsapp_business_accounts").upsert(wabaRows, {
+    if (wabaRowsUnique.length > 0) {
+      const { error: upsertWabaError } = await admin.from("meta_whatsapp_business_accounts").upsert(wabaRowsUnique, {
         onConflict: "user_id,waba_id",
       });
       if (upsertWabaError) {
@@ -188,18 +197,21 @@ Deno.serve(async (req) => {
     }
 
     // 3) Templates per WABA
-    const templateRows: Array<{
-      user_id: string;
-      waba_id: string;
-      template_name: string;
-      language: string;
-      category: string | null;
-      status: string | null;
-      components: unknown;
-      raw: unknown;
-    }> = [];
+    const templateRowsMap = new Map<
+      string,
+      {
+        user_id: string;
+        waba_id: string;
+        template_name: string;
+        language: string;
+        category: string | null;
+        status: string | null;
+        components: unknown;
+        raw: unknown;
+      }
+    >();
 
-    for (const waba of wabaRows) {
+    for (const waba of wabaRowsUnique) {
       const wabaId = waba.waba_id;
       const templates = await fetchAllPages<any>(
         `${GRAPH_BASE}/${wabaId}/message_templates?fields=name,language,status,category,components&limit=100`,
@@ -209,7 +221,12 @@ Deno.serve(async (req) => {
         const name = (t?.name ?? "").toString().trim();
         const language = (t?.language ?? "").toString().trim();
         if (!name || !language) continue;
-        templateRows.push({
+
+        const key = `${userId}:${wabaId}:${name}:${language}`;
+        // Keep the first occurrence; if Meta returns duplicates across pages, we ignore later ones.
+        if (templateRowsMap.has(key)) continue;
+
+        templateRowsMap.set(key, {
           user_id: userId,
           waba_id: wabaId,
           template_name: name,
@@ -221,6 +238,8 @@ Deno.serve(async (req) => {
         });
       }
     }
+
+    const templateRows = Array.from(templateRowsMap.values());
 
     if (templateRows.length > 0) {
       const { error: upsertTplError } = await admin.from("meta_whatsapp_templates").upsert(templateRows, {
