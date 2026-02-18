@@ -116,6 +116,78 @@ export type Database = {
         }
         Relationships: []
       }
+      meta_whatsapp_business_accounts: {
+        Row: {
+          created_at: string
+          id: string
+          meta_bm_id: string
+          name: string
+          updated_at: string
+          user_id: string
+          waba_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          meta_bm_id: string
+          name: string
+          updated_at?: string
+          user_id: string
+          waba_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          meta_bm_id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+          waba_id?: string
+        }
+        Relationships: []
+      }
+      meta_whatsapp_templates: {
+        Row: {
+          category: string | null
+          components: Json
+          created_at: string
+          id: string
+          language: string
+          raw: Json
+          status: string | null
+          template_name: string
+          updated_at: string
+          user_id: string
+          waba_id: string
+        }
+        Insert: {
+          category?: string | null
+          components?: Json
+          created_at?: string
+          id?: string
+          language: string
+          raw?: Json
+          status?: string | null
+          template_name: string
+          updated_at?: string
+          user_id: string
+          waba_id: string
+        }
+        Update: {
+          category?: string | null
+          components?: Json
+          created_at?: string
+          id?: string
+          language?: string
+          raw?: Json
+          status?: string | null
+          template_name?: string
+          updated_at?: string
+          user_id?: string
+          waba_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
