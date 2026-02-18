@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-const META_SCOPES = ["business_management", "ads_read", "ads_management"] as const;
+const META_SCOPES = ["business_management", "ads_read", "ads_management", "whatsapp_business_management"] as const;
 
 export default function Integrations() {
   const navigate = useNavigate();
