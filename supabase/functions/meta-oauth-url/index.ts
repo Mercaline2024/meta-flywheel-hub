@@ -56,7 +56,12 @@ type Body = {
   redirect_uri?: string;
 };
 
-const DEFAULT_SCOPES = ["business_management", "ads_read"];
+const DEFAULT_SCOPES = [
+  "business_management",
+  "ads_read",
+  "ads_management",
+  "whatsapp_business_management",
+];
 const META_DIALOG_URL = "https://www.facebook.com/v19.0/dialog/oauth";
 
 Deno.serve(async (req) => {
@@ -85,7 +90,8 @@ Deno.serve(async (req) => {
     const redirectUri = (body.redirect_uri ?? "").trim();
     if (!redirectUri) return json(400, { error: "Missing redirect_uri" });
 
-    const scopes = Array.isArray(body.scopes) && body.scopes.length > 0 ? body.scopes : DEFAULT_SCOPES;
+    const scopesRaw = Array.isArray(body.scopes) && body.scopes.length > 0 ? body.scopes : DEFAULT_SCOPES;
+    const scopes = Array.from(new Set(scopesRaw.map((s) => (s ?? "").toString().trim()).filter(Boolean)));
 
     const payload = JSON.stringify({ sub: userId, ts: Date.now() });
     const payloadB64 = base64UrlEncodeString(payload);
