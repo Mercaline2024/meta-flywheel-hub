@@ -131,10 +131,13 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 2) Ad accounts per BM
+    // 2) Ad accounts + WABAs per BM
     const adAccountRows: Array<{ user_id: string; meta_ad_account_id: string; name: string; meta_bm_id: string }> = [];
+    const wabaRows: Array<{ user_id: string; meta_bm_id: string; waba_id: string; name: string }> = [];
+
     for (const bm of businesses) {
       const bmId = bm.id;
+
       const accounts = await fetchAllPages<{ id: string; name?: string }>(
         `${GRAPH_BASE}/${bmId}/owned_ad_accounts?fields=id,name&limit=100`,
         accessToken,
@@ -148,6 +151,22 @@ Deno.serve(async (req) => {
           meta_bm_id: bmId,
         });
       }
+
+      // WhatsApp Business Accounts (WABA)
+      // Requires scope: whatsapp_business_management
+      const wabas = await fetchAllPages<{ id: string; name?: string }>(
+        `${GRAPH_BASE}/${bmId}/owned_whatsapp_business_accounts?fields=id,name&limit=100`,
+        accessToken,
+      );
+      for (const w of wabas) {
+        if (!w?.id) continue;
+        wabaRows.push({
+          user_id: userId,
+          meta_bm_id: bmId,
+          waba_id: w.id,
+          name: (w.name ?? `WABA ${w.id}`).slice(0, 500),
+        });
+      }
     }
 
     if (adAccountRows.length > 0) {
@@ -159,15 +178,73 @@ Deno.serve(async (req) => {
       }
     }
 
+    if (wabaRows.length > 0) {
+      const { error: upsertWabaError } = await admin.from("meta_whatsapp_business_accounts").upsert(wabaRows, {
+        onConflict: "user_id,waba_id",
+      });
+      if (upsertWabaError) {
+        return json(500, { error: `DB upsert WABAs failed: ${upsertWabaError.message}` });
+      }
+    }
+
+    // 3) Templates per WABA
+    const templateRows: Array<{
+      user_id: string;
+      waba_id: string;
+      template_name: string;
+      language: string;
+      category: string | null;
+      status: string | null;
+      components: unknown;
+      raw: unknown;
+    }> = [];
+
+    for (const waba of wabaRows) {
+      const wabaId = waba.waba_id;
+      const templates = await fetchAllPages<any>(
+        `${GRAPH_BASE}/${wabaId}/message_templates?fields=name,language,status,category,components&limit=100`,
+        accessToken,
+      );
+      for (const t of templates) {
+        const name = (t?.name ?? "").toString().trim();
+        const language = (t?.language ?? "").toString().trim();
+        if (!name || !language) continue;
+        templateRows.push({
+          user_id: userId,
+          waba_id: wabaId,
+          template_name: name,
+          language,
+          category: (t?.category ?? null) as any,
+          status: (t?.status ?? null) as any,
+          components: (t?.components ?? []) as any,
+          raw: t,
+        });
+      }
+    }
+
+    if (templateRows.length > 0) {
+      const { error: upsertTplError } = await admin.from("meta_whatsapp_templates").upsert(templateRows, {
+        onConflict: "user_id,waba_id,template_name,language",
+      });
+      if (upsertTplError) {
+        return json(500, { error: `DB upsert templates failed: ${upsertTplError.message}` });
+      }
+    }
+
     await admin
       .from("meta_connections")
-      .update({ bm_sync_at: new Date().toISOString(), ad_account_sync_at: new Date().toISOString() })
+      .update({
+        bm_sync_at: new Date().toISOString(),
+        ad_account_sync_at: new Date().toISOString(),
+      })
       .eq("user_id", userId);
 
     return json(200, {
       success: true,
       business_managers: bmRows.length,
       ad_accounts: adAccountRows.length,
+      wabas: wabaRows.length,
+      templates: templateRows.length,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
