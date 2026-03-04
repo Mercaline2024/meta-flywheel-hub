@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
-import { CheckCircle2, MessageSquareText, RefreshCw, Tag } from "lucide-react";
+import { MessageSquareText, RefreshCw, Tag } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useMetaAssets } from "@/lib/meta/useMetaAssets";
@@ -34,31 +34,7 @@ type TemplatePreset = {
 
 const presets: TemplatePreset[] = [
   {
-    id: "t1",
-    category: "Promoción",
-    title: "Promo limitada",
-    preview: "Hola {{1}}, hoy tienes 15% OFF. ¿Te lo reservo?",
-  },
-  {
-    id: "t2",
-    category: "Recordatorio",
-    title: "Seguimiento 24h",
-    preview: "Hola {{1}}, ¿pudiste revisar la propuesta? Estoy listo para ayudarte.",
-  },
-  {
-    id: "t3",
-    category: "Soporte",
-    title: "Ticket recibido",
-    preview: "Recibimos tu solicitud. Te respondemos en menos de 2 horas hábiles.",
-  },
-  {
-    id: "t4",
-    category: "Promoción",
-    title: "Carrito abandonado",
-    preview: "Vimos que dejaste productos en tu carrito. ¿Te ayudo a finalizar?",
-  },
-  {
-    id: "t5",
+    id: "luisa-v1",
     category: "Promoción",
     title: "Mnesaje Profe luisa V1",
     preview:
@@ -66,11 +42,78 @@ const presets: TemplatePreset[] = [
     footerText: "Conoce más de mí",
     headerVideoUrl: "https://upload.ecomdrop.io/images/2026/03/04/VIDEO-FINAL-ELEJIDA.mp4",
     buttons: [
-      { type: "QUICK_REPLY", text: "Conoceme" },
+      { type: "QUICK_REPLY", text: "Conóceme" },
+      { type: "QUICK_REPLY", text: "STOP Darme de baja" },
+    ],
+  },
+  {
+    id: "luisa-v2",
+    category: "Promoción",
+    title: "Mensaje Profe Luisa V2",
+    preview:
+      "Hola 👋\nSoy Luisa Hernández, docente 📚 y empresaria santandereana con 20 años trabajando por la educación y el emprendimiento sostenible.\nTengo una propuesta concreta para llevar más oportunidades a nuestra región 🏛️\nSantander merece una voz comprometida con su gente 🤝🌿",
+    footerText: "Conoce más de mí",
+    headerVideoUrl: "https://upload.ecomdrop.io/images/2026/03/04/VIDEO-FINAL-ELEJIDA.mp4",
+    buttons: [
+      { type: "QUICK_REPLY", text: "Conóceme" },
+      { type: "QUICK_REPLY", text: "STOP Darme de baja" },
+    ],
+  },
+  {
+    id: "luisa-v3",
+    category: "Promoción",
+    title: "Mensaje Profe Luisa V3",
+    preview:
+      "Hola 👋\nSoy La Profe Luisa 📚\n20 años en educación y emprendimiento me han enseñado que Santander tiene todo para crecer 🌿\nHoy doy el paso más importante de mi vida para trabajar desde adentro por nuestra gente 🏛️🤝\n¿Me acompañas en este camino?",
+    footerText: "Conoce más de mí",
+    headerVideoUrl: "https://upload.ecomdrop.io/images/2026/03/04/VIDEO-FINAL-ELEJIDA.mp4",
+    buttons: [
+      { type: "QUICK_REPLY", text: "Conóceme" },
+      { type: "QUICK_REPLY", text: "STOP Darme de baja" },
+    ],
+  },
+  {
+    id: "luisa-v4",
+    category: "Promoción",
+    title: "Mensaje Profe Luisa V4",
+    preview:
+      "Hola 👋\nSoy La Profe Luisa, docente 📚 y empresaria santandereana.\nLlevo 20 años trabajando por la educación y el emprendimiento de nuestra región 🌿\nEste marzo tengo algo importante que contarte sobre el futuro de Santander 🏛️\nCon tu apoyo podemos lograr mucho más 🤝",
+    footerText: "Conoce más de mí",
+    headerVideoUrl: "https://upload.ecomdrop.io/images/2026/03/04/VIDEO-FINAL-ELEJIDA.mp4",
+    buttons: [
+      { type: "QUICK_REPLY", text: "Conóceme" },
+      { type: "QUICK_REPLY", text: "STOP Darme de baja" },
+    ],
+  },
+  {
+    id: "luisa-v5",
+    category: "Promoción",
+    title: "Mensaje Profe Luisa V5",
+    preview:
+      "Hola 👋\nSoy La Profe Luisa, docente 📚 y empresaria santandereana.\nLlevo 20 años trabajando por la educación y el emprendimiento sostenible de nuestra región.\nQuiero con tu apoyo llevar la voz de Santander al Congreso 🏛️ para abrir más oportunidades para nuestra gente 🤝🌿",
+    footerText: "Conoce más de mí",
+    headerVideoUrl: "https://upload.ecomdrop.io/images/2026/03/04/VIDEO-FINAL-ELEJIDA.mp4",
+    buttons: [
+      { type: "QUICK_REPLY", text: "Conóceme" },
+      { type: "QUICK_REPLY", text: "STOP Darme de baja" },
+    ],
+  },
+  {
+    id: "luisa-v6",
+    category: "Promoción",
+    title: "Mensaje Profe Luisa V6",
+    preview:
+      "Hola 👋\nSoy Luisa Hernández, docente 📚 y empresaria santandereana.\nLlevo 20 años construyendo oportunidades desde la educación y el emprendimiento en nuestra región.\nHoy quiero compartirte mi visión para el futuro de Santander 🌿\n¿Te gustaría conocer más sobre este proyecto de transformación regional? 🤝",
+    footerText: "Conoce más de mí",
+    headerVideoUrl: "https://upload.ecomdrop.io/images/2026/03/04/VIDEO-FINAL-ELEJIDA.mp4",
+    buttons: [
+      { type: "QUICK_REPLY", text: "Conóceme" },
       { type: "QUICK_REPLY", text: "STOP Darme de baja" },
     ],
   },
 ];
+
+const recommendedOrder = ["luisa-v6", "luisa-v3", "luisa-v2", "luisa-v5", "luisa-v4", "luisa-v1"];
 
 function mapCategoryToMeta(category: TemplatePreset["category"]) {
   switch (category) {
@@ -84,19 +127,43 @@ function mapCategoryToMeta(category: TemplatePreset["category"]) {
   }
 }
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  let timeoutId: number | undefined;
+
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = window.setTimeout(() => reject(new Error("Timeout al crear plantilla en Meta")), timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timeoutId) window.clearTimeout(timeoutId);
+  }
+}
+
 export default function Templates() {
   const [creatingId, setCreatingId] = useState<string | null>(null);
+  const [creatingBatch, setCreatingBatch] = useState(false);
+  const [selectedPresetIds, setSelectedPresetIds] = useState<string[]>(() => presets.map((preset) => preset.id));
   const [selectedBm, setSelectedBm] = useState<string | null>(null);
   const [selectedWaba, setSelectedWaba] = useState<string | null>(null);
 
   const assets = useMetaAssets(null);
   const wa = useMetaWhatsapp(selectedBm, selectedWaba);
 
-  const byCategory = useMemo(() => {
-    const groups: Record<string, TemplatePreset[]> = { Promoción: [], Recordatorio: [], Soporte: [] };
-    for (const t of presets) groups[t.category].push(t);
-    return groups;
-  }, []);
+  const selectedCount = selectedPresetIds.length;
+
+  const templatesToCreate = useMemo(() => {
+    const selected = presets.filter((preset) => selectedPresetIds.includes(preset.id));
+    const ordered = recommendedOrder
+      .map((id) => selected.find((preset) => preset.id === id))
+      .filter((preset): preset is TemplatePreset => Boolean(preset));
+
+    const missing = selected.filter((preset) => !recommendedOrder.includes(preset.id));
+    return [...ordered, ...missing];
+  }, [selectedPresetIds]);
 
   const sync = async () => {
     try {
@@ -108,39 +175,73 @@ export default function Templates() {
     }
   };
 
-  const createTemplate = async (t: TemplatePreset) => {
+  const createTemplateWithRetry = async (template: TemplatePreset) => {
+    const maxAttempts = 3;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      try {
+        const invokePromise = supabase.functions.invoke("meta-create-whatsapp-template", {
+          body: {
+            waba_id: selectedWaba,
+            name: template.title,
+            category: mapCategoryToMeta(template.category),
+            language: "es",
+            body_text: template.preview,
+            footer_text: template.footerText,
+            header_video_url: template.headerVideoUrl,
+            buttons: template.buttons,
+          },
+        });
+
+        const { data, error } = await withTimeout(invokePromise, 45000);
+        if (error) throw error;
+
+        return data;
+      } catch (error) {
+        if (attempt === maxAttempts) throw error;
+        await sleep(1200 * attempt);
+      }
+    }
+  };
+
+  const createSelectedTemplates = async () => {
     if (!selectedWaba) {
       toast({ title: "Selecciona un WABA", description: "Primero elige BM → WABA para crear plantillas." });
       return;
     }
 
-    setCreatingId(t.id);
+    if (templatesToCreate.length === 0) {
+      toast({ title: "Sin selección", description: "Selecciona al menos una plantilla." });
+      return;
+    }
+
+    setCreatingBatch(true);
+    let ok = 0;
+    const failed: string[] = [];
+
     try {
-      const { data, error } = await supabase.functions.invoke("meta-create-whatsapp-template", {
-        body: {
-          waba_id: selectedWaba,
-          name: t.title,
-          category: mapCategoryToMeta(t.category),
-          language: "es",
-          body_text: t.preview,
-          footer_text: t.footerText,
-          header_video_url: t.headerVideoUrl,
-          buttons: t.buttons,
-        },
-      });
-      if (error) throw error;
+      for (const template of templatesToCreate) {
+        setCreatingId(template.id);
+
+        try {
+          await createTemplateWithRetry(template);
+          ok += 1;
+        } catch {
+          failed.push(template.title);
+        }
+      }
+
+      await wa.templates.refetch();
 
       toast({
-        title: "Plantilla enviada a Meta",
-        description: `Se solicitó la creación. Respuesta: ${JSON.stringify((data as any) ?? {})}`,
+        title: failed.length === 0 ? "Plantillas creadas" : "Creación completada con incidencias",
+        description:
+          failed.length === 0
+            ? `Se crearon ${ok} plantillas.`
+            : `Creadas: ${ok}. Fallaron: ${failed.length} (${failed.join(", ")}).`,
       });
-
-      // refresh list
-      await wa.templates.refetch();
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : "No se pudo crear la plantilla";
-      toast({ title: "Error al crear plantilla", description: message });
     } finally {
+      setCreatingBatch(false);
       setCreatingId(null);
     }
   };
@@ -151,7 +252,7 @@ export default function Templates() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Plantillas de WhatsApp</h1>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-            Selecciona un Business Manager y un WABA para ver las plantillas sincronizadas y crear nuevas.
+            Selecciona un Business Manager y un WABA para previsualizar y crear plantillas.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -159,7 +260,7 @@ export default function Templates() {
             <MessageSquareText className="h-4 w-4" aria-hidden="true" />
             {(wa.templates.data?.length ?? 0).toString()} sincronizadas
           </Badge>
-          <Button variant="secondary" onClick={sync} disabled={assets.syncing} className="gap-2">
+          <Button variant="secondary" onClick={sync} disabled={assets.syncing || creatingBatch} className="gap-2">
             <RefreshCw className={assets.syncing ? "h-4 w-4 animate-spin" : "h-4 w-4"} aria-hidden="true" />
             {assets.syncing ? "Sincronizando…" : "Sincronizar"}
           </Button>
@@ -193,9 +294,7 @@ export default function Templates() {
                 ))}
               </SelectContent>
             </Select>
-            {assets.bms.isError ? (
-              <div className="text-xs text-muted-foreground">No se pudo cargar BMs.</div>
-            ) : null}
+            {assets.bms.isError ? <div className="text-xs text-muted-foreground">No se pudo cargar BMs.</div> : null}
           </div>
 
           <div className="space-y-2">
@@ -206,7 +305,9 @@ export default function Templates() {
               disabled={!selectedBm || wa.wabas.isLoading || (wa.wabas.data?.length ?? 0) === 0}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder={!selectedBm ? "Selecciona un BM primero" : wa.wabas.isLoading ? "Cargando…" : "Selecciona un WABA"} />
+                <SelectValue
+                  placeholder={!selectedBm ? "Selecciona un BM primero" : wa.wabas.isLoading ? "Cargando…" : "Selecciona un WABA"}
+                />
               </SelectTrigger>
               <SelectContent>
                 {(wa.wabas.data ?? []).map((w) => (
@@ -256,59 +357,92 @@ export default function Templates() {
         </Card>
       ) : null}
 
-      <Tabs defaultValue="Promoción" className="w-full">
-        <TabsList>
-          <TabsTrigger value="Promoción">Promoción</TabsTrigger>
-          <TabsTrigger value="Recordatorio">Recordatorio</TabsTrigger>
-          <TabsTrigger value="Soporte">Soporte</TabsTrigger>
-        </TabsList>
+      <Card className="mc-card">
+        <CardHeader>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <CardTitle className="text-base">Variaciones listas para crear</CardTitle>
+              <CardDescription>Selecciona manualmente o crea todas con un solo botón.</CardDescription>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="secondary">{selectedCount} seleccionadas</Badge>
+              <Button
+                variant="outline"
+                onClick={() => setSelectedPresetIds([])}
+                disabled={creatingBatch || selectedPresetIds.length === 0}
+              >
+                Limpiar
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setSelectedPresetIds(presets.map((preset) => preset.id))}
+                disabled={creatingBatch || selectedPresetIds.length === presets.length}
+              >
+                Seleccionar todas
+              </Button>
+              <Button
+                variant="success"
+                onClick={createSelectedTemplates}
+                disabled={!selectedWaba || creatingBatch || selectedCount === 0}
+              >
+                {creatingBatch ? "Creando plantillas…" : "CREAR PLANTILLAS"}
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {creatingBatch && creatingId ? (
+            <div className="text-xs text-muted-foreground">
+              Procesando: {presets.find((preset) => preset.id === creatingId)?.title ?? "Plantilla"}
+            </div>
+          ) : null}
 
-        {Object.entries(byCategory).map(([category, templates]) => (
-          <TabsContent key={category} value={category} className="mt-6">
-            <div className="grid gap-4 md:grid-cols-2">
-              {templates.map((t) => (
-                <Card key={t.id} className="mc-card overflow-hidden">
+          <div className="grid gap-4 md:grid-cols-2">
+            {presets.map((template) => {
+              const checked = selectedPresetIds.includes(template.id);
+
+              return (
+                <Card key={template.id} className="mc-card overflow-hidden">
                   <CardHeader>
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <CardTitle className="text-base">{t.title}</CardTitle>
-                        <CardDescription className="mt-1">Preset {category.toLowerCase()}</CardDescription>
+                        <CardTitle className="text-base">{template.title}</CardTitle>
+                        <CardDescription className="mt-1">Preset marketing</CardDescription>
                       </div>
-                      <Badge variant="secondary" className="gap-2">
-                        <Tag className="h-3.5 w-3.5" aria-hidden="true" />
-                        {category}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="gap-2">
+                          <Tag className="h-3.5 w-3.5" aria-hidden="true" />
+                          {template.category}
+                        </Badge>
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={(value) => {
+                            const shouldSelect = value === true;
+                            setSelectedPresetIds((prev) => {
+                              if (shouldSelect) return prev.includes(template.id) ? prev : [...prev, template.id];
+                              return prev.filter((id) => id !== template.id);
+                            });
+                          }}
+                          aria-label={`Seleccionar ${template.title}`}
+                          disabled={creatingBatch}
+                        />
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="rounded-lg border bg-background/60 p-4 text-sm leading-relaxed text-muted-foreground">
-                      {t.preview}
+                    <div className="rounded-lg border bg-background/60 p-4 text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
+                      {template.preview}
                     </div>
-
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="text-xs text-muted-foreground">
-                        {!selectedWaba
-                          ? "Selecciona BM → WABA para habilitar"
-                          : creatingId === t.id
-                            ? "Enviando a Meta…"
-                            : "Listo para ejecutar"}
-                      </div>
-                      <Button
-                        variant={creatingId === t.id ? "secondary" : "success"}
-                        onClick={() => createTemplate(t)}
-                        disabled={creatingId !== null || !selectedWaba}
-                      >
-                        <CheckCircle2 aria-hidden="true" />
-                        Crear
-                      </Button>
+                    <div className="text-xs text-muted-foreground">
+                      {template.footerText ? `Footer: ${template.footerText}` : "Sin footer"}
                     </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          </TabsContent>
-        ))}
-      </Tabs>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
