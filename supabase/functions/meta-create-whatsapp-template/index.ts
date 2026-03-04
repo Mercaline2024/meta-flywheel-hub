@@ -42,6 +42,7 @@ type Body = {
   language: string;
   body_text: string;
   header_video_url?: string;
+  header_video_handle?: string;
   buttons?: Array<BodyButton | string>;
 };
 
@@ -109,6 +110,82 @@ function sanitizeButtonText(input: string) {
     .slice(0, 25);
 }
 
+function inferVideoMimeTypeFromUrl(url: string) {
+  const clean = url.split("?")[0]?.toLowerCase() ?? "";
+  if (clean.endsWith(".mov")) return "video/quicktime";
+  if (clean.endsWith(".webm")) return "video/webm";
+  return "video/mp4";
+}
+
+function inferVideoFileNameFromUrl(url: string) {
+  try {
+    const parsed = new URL(url);
+    const segment = parsed.pathname.split("/").filter(Boolean).pop();
+    return segment && segment.length > 0 ? segment : "template-video.mp4";
+  } catch {
+    return "template-video.mp4";
+  }
+}
+
+async function uploadTemplateVideoHandle(params: {
+  sourceUrl: string;
+  accessToken: string;
+  appId: string;
+}) {
+  const { sourceUrl, accessToken, appId } = params;
+
+  const mediaRes = await fetch(sourceUrl);
+  if (!mediaRes.ok) {
+    throw new Error(`Unable to download video sample [${mediaRes.status}]`);
+  }
+
+  const videoBytes = await mediaRes.arrayBuffer();
+  if (!videoBytes.byteLength) {
+    throw new Error("Video sample is empty");
+  }
+
+  const fileName = inferVideoFileNameFromUrl(sourceUrl);
+  const fileType = inferVideoMimeTypeFromUrl(sourceUrl);
+
+  const initUrl = new URL(`${GRAPH_BASE}/${appId}/uploads`);
+  initUrl.searchParams.set("file_name", fileName);
+  initUrl.searchParams.set("file_length", String(videoBytes.byteLength));
+  initUrl.searchParams.set("file_type", fileType);
+
+  const initRes = await fetch(initUrl.toString(), {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  const initData = await initRes.json().catch(() => ({}));
+  if (!initRes.ok || !initData?.id) {
+    throw new Error(`Video upload init failed: ${JSON.stringify(initData)}`);
+  }
+
+  const uploadSessionId = String(initData.id);
+
+  const transferRes = await fetch(`${GRAPH_BASE}/${uploadSessionId}`, {
+    method: "POST",
+    headers: {
+      Authorization: `OAuth ${accessToken}`,
+      file_offset: "0",
+      "Content-Type": "application/octet-stream",
+    },
+    body: videoBytes,
+  });
+
+  const transferData = await transferRes.json().catch(() => ({}));
+  const handle = transferData?.h;
+
+  if (!transferRes.ok || !handle) {
+    throw new Error(`Video upload transfer failed: ${JSON.stringify(transferData)}`);
+  }
+
+  return String(handle);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -121,6 +198,7 @@ Deno.serve(async (req) => {
     const SUPABASE_URL = requireEnv("SUPABASE_URL");
     const SUPABASE_ANON_KEY = requireEnvAny(["SUPABASE_ANON_KEY", "SUPABASE_PUBLISHABLE_KEY"]);
     const SUPABASE_SERVICE_ROLE_KEY = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
+    const META_APP_ID = requireEnv("META_APP_ID");
 
     const token = authHeader.replace("Bearer ", "");
 
@@ -139,6 +217,7 @@ Deno.serve(async (req) => {
     const bodyText = (body.body_text ?? "").trim();
     const category = (body.category ?? "MARKETING").toString();
     const headerVideoUrl = (body.header_video_url ?? "").trim();
+    const headerVideoHandleInput = (body.header_video_handle ?? "").trim();
     const rawButtons = Array.isArray(body.buttons) ? body.buttons : [];
     const buttons = rawButtons
       .map((button): BodyButton | null => {
@@ -191,12 +270,20 @@ Deno.serve(async (req) => {
 
     const components: Array<Record<string, unknown>> = [bodyComponent];
 
-    if (headerVideoUrl) {
+    if (headerVideoUrl || headerVideoHandleInput) {
+      const headerHandle = headerVideoHandleInput
+        ? headerVideoHandleInput
+        : await uploadTemplateVideoHandle({
+            sourceUrl: headerVideoUrl,
+            accessToken: conn.access_token,
+            appId: META_APP_ID,
+          });
+
       components.unshift({
         type: "HEADER",
         format: "VIDEO",
         example: {
-          header_handle: [headerVideoUrl],
+          header_handle: [headerHandle],
         },
       });
     }
