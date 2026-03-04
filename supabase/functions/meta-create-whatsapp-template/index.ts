@@ -54,6 +54,35 @@ function slugifyName(input: string) {
     .slice(0, 512);
 }
 
+function buildAlternativeTemplateName(baseName: string) {
+  const suffix = Date.now().toString().slice(-6);
+  return `${baseName.slice(0, Math.max(0, 512 - 7))}_${suffix}`;
+}
+
+function parseMetaError(raw: unknown) {
+  if (!raw || typeof raw !== "object") return null;
+  const error = (raw as { error?: unknown }).error;
+  if (!error || typeof error !== "object") return null;
+
+  const parsed = error as {
+    code?: number;
+    error_subcode?: number;
+    error_user_msg?: string;
+    error_user_title?: string;
+    message?: string;
+    type?: string;
+  };
+
+  return {
+    code: parsed.code,
+    subcode: parsed.error_subcode,
+    title: parsed.error_user_title,
+    userMessage: parsed.error_user_msg,
+    message: parsed.message,
+    type: parsed.type,
+  };
+}
+
 function buildBodyExample(text: string) {
   const matches = Array.from(text.matchAll(/{{\s*(\d+)\s*}}/g));
   if (matches.length === 0) return null;
@@ -183,32 +212,49 @@ Deno.serve(async (req) => {
       });
     }
 
-    const payload = {
-      name,
-      language,
-      category,
-      components,
+    const createTemplateAtMeta = async (templateName: string) => {
+      const payload = {
+        name: templateName,
+        language,
+        category,
+        components,
+      };
+
+      const res = await fetch(createUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${conn.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const text = await res.text();
+      let data: any;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = { raw: text };
+      }
+
+      return { res, data, payload };
     };
 
-    const res = await fetch(createUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${conn.access_token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+    let finalTemplateName = name;
+    let result = await createTemplateAtMeta(finalTemplateName);
 
-    const text = await res.text();
-    let data: any;
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = { raw: text };
+    if (!result.res.ok) {
+      const parsedError = parseMetaError(result.data);
+      const shouldRetryWithNewName = parsedError?.code === 100 && parsedError?.subcode === 2388023;
+
+      if (shouldRetryWithNewName) {
+        finalTemplateName = buildAlternativeTemplateName(name);
+        result = await createTemplateAtMeta(finalTemplateName);
+      }
     }
 
-    if (!res.ok) {
-      return json(400, { error: `Meta template create failed [${res.status}]: ${JSON.stringify(data)}` });
+    if (!result.res.ok) {
+      return json(400, { error: `Meta template create failed [${result.res.status}]: ${JSON.stringify(result.data)}` });
     }
 
     // Best-effort: store locally so UI reflects immediately.
@@ -216,17 +262,17 @@ Deno.serve(async (req) => {
       {
         user_id: userId,
         waba_id: wabaId,
-        template_name: name,
+        template_name: finalTemplateName,
         language,
         category: category ?? null,
-        status: (data?.status ?? null) as any,
-        components: payload.components,
-        raw: { request: payload, response: data },
+        status: (result.data?.status ?? null) as any,
+        components: result.payload.components,
+        raw: { request: result.payload, response: result.data },
       },
       { onConflict: "user_id,waba_id,template_name,language" },
     );
 
-    return json(200, { success: true, template: data });
+    return json(200, { success: true, template: result.data, template_name_used: finalTemplateName });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("meta-create-whatsapp-template error:", message);
