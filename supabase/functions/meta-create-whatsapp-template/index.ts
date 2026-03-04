@@ -166,7 +166,7 @@ async function uploadTemplateVideoHandle(params: {
 
   const uploadSessionId = String(initData.id);
 
-  const transferRes = await fetch(`${GRAPH_BASE}/${encodeURIComponent(uploadSessionId)}`, {
+  const transferRes = await fetch(`${GRAPH_BASE}/${uploadSessionId}`, {
     method: "POST",
     headers: {
       Authorization: `OAuth ${accessToken}`,
