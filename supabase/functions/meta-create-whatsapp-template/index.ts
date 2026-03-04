@@ -31,6 +31,10 @@ function requireEnvAny(names: string[]) {
   throw new Error(`${names[0]} is not configured`);
 }
 
+type BodyButton =
+  | { type: "QUICK_REPLY"; text: string }
+  | { type: "URL"; text: string; url: string };
+
 type Body = {
   waba_id: string;
   name: string;
@@ -38,7 +42,7 @@ type Body = {
   language: string;
   body_text: string;
   header_video_url?: string;
-  buttons?: string[];
+  buttons?: Array<BodyButton | string>;
 };
 
 function slugifyName(input: string) {
@@ -95,7 +99,28 @@ Deno.serve(async (req) => {
     const bodyText = (body.body_text ?? "").trim();
     const category = (body.category ?? "MARKETING").toString();
     const headerVideoUrl = (body.header_video_url ?? "").trim();
-    const buttons = (body.buttons ?? []).map((b) => (b ?? "").trim()).filter(Boolean);
+    const rawButtons = Array.isArray(body.buttons) ? body.buttons : [];
+    const buttons = rawButtons
+      .map((button): BodyButton | null => {
+        if (typeof button === "string") {
+          const text = button.trim();
+          return text ? { type: "QUICK_REPLY", text } : null;
+        }
+
+        if (!button || typeof button !== "object") return null;
+
+        if (button.type === "URL") {
+          const text = (button.text ?? "").trim();
+          const url = (button.url ?? "").trim();
+          if (!text || !url) return null;
+          return { type: "URL", text, url };
+        }
+
+        const text = (button.text ?? "").trim();
+        if (!text) return null;
+        return { type: "QUICK_REPLY", text };
+      })
+      .filter((button): button is BodyButton => Boolean(button));
 
     if (!wabaId) return json(400, { error: "Missing waba_id" });
     if (!rawName || !name) return json(400, { error: "Missing name" });
@@ -139,7 +164,11 @@ Deno.serve(async (req) => {
     if (buttons.length > 0) {
       components.push({
         type: "BUTTONS",
-        buttons: buttons.map((text) => ({ type: "QUICK_REPLY", text })),
+        buttons: buttons.map((button) =>
+          button.type === "URL"
+            ? { type: "URL", text: button.text, url: button.url }
+            : { type: "QUICK_REPLY", text: button.text },
+        ),
       });
     }
 

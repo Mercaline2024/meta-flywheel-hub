@@ -11,13 +11,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMetaAssets } from "@/lib/meta/useMetaAssets";
 import { useMetaWhatsapp } from "@/lib/meta/useMetaWhatsapp";
 
+type TemplateButtonPreset =
+  | {
+      type: "URL";
+      text: string;
+      url: string;
+    }
+  | {
+      type: "QUICK_REPLY";
+      text: string;
+    };
+
 type TemplatePreset = {
   id: string;
   category: "Promoción" | "Recordatorio" | "Soporte";
   title: string;
   preview: string;
   headerVideoUrl?: string;
-  buttons?: string[];
+  buttons?: TemplateButtonPreset[];
 };
 
 const presets: TemplatePreset[] = [
@@ -50,9 +61,11 @@ const presets: TemplatePreset[] = [
     category: "Promoción",
     title: "Mensaje especial Luisa Hernández",
     preview:
-      "Hola {{1}} 👋 Soy Luisa Hernández, docente 📚 y empresaria santandereana con 20 años transformando vidas desde la educación y el emprendimiento. Hoy quiero compartirte algo importante para nuestra región 🌿 👇 Mira este mensaje especial para ti: [VIDEO] Conoce todo sobre este proyecto 👉 https://linktr.ee/laprofeluisa —————————————— ¿No deseas recibir más mensajes? Responde STOP y te eliminamos de inmediato ✅",
-    headerVideoUrl: "https://upload.ecomdrop.io/images/2026/03/04/VIDEO-FINAL-ELEJIDA.mp4",
-    buttons: ["CONOCEME", "STOP /Darme de baja!"],
+      "Hola {{1}} 👋 Soy Luisa Hernández, docente 📚 y empresaria santandereana con 20 años transformando vidas desde la educación y el emprendimiento. Hoy quiero compartirte algo importante para nuestra región 🌿 ¿No deseas recibir más mensajes? Responde STOP y te eliminamos de inmediato ✅",
+    buttons: [
+      { type: "URL", text: "🌿 Conóceme", url: "https://linktr.ee/laprofeluisa" },
+      { type: "QUICK_REPLY", text: "🔕 STOP — Darme de baja" },
+    ],
   },
 ];
 
