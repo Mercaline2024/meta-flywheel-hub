@@ -16,6 +16,8 @@ type TemplatePreset = {
   category: "Promoción" | "Recordatorio" | "Soporte";
   title: string;
   preview: string;
+  headerVideoUrl?: string;
+  buttons?: string[];
 };
 
 const presets: TemplatePreset[] = [
@@ -42,6 +44,15 @@ const presets: TemplatePreset[] = [
     category: "Promoción",
     title: "Carrito abandonado",
     preview: "Vimos que dejaste productos en tu carrito. ¿Te ayudo a finalizar?",
+  },
+  {
+    id: "t5",
+    category: "Promoción",
+    title: "Mensaje especial Luisa Hernández",
+    preview:
+      "Hola {{1}} 👋 Soy Luisa Hernández, docente 📚 y empresaria santandereana con 20 años transformando vidas desde la educación y el emprendimiento. Hoy quiero compartirte algo importante para nuestra región 🌿 👇 Mira este mensaje especial para ti: [VIDEO] Conoce todo sobre este proyecto 👉 https://linktr.ee/laprofeluisa —————————————— ¿No deseas recibir más mensajes? Responde STOP y te eliminamos de inmediato ✅",
+    headerVideoUrl: "https://upload.ecomdrop.io/images/2026/03/04/VIDEO-FINAL-ELEJIDA.mp4",
+    buttons: ["CONOCEME", "STOP /Darme de baja!"],
   },
 ];
 
@@ -96,6 +107,8 @@ export default function Templates() {
           category: mapCategoryToMeta(t.category),
           language: "es",
           body_text: t.preview,
+          header_video_url: t.headerVideoUrl,
+          buttons: t.buttons,
         },
       });
       if (error) throw error;

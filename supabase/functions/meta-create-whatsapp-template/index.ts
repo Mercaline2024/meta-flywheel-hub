@@ -37,6 +37,8 @@ type Body = {
   category?: "MARKETING" | "UTILITY" | "AUTHENTICATION";
   language: string;
   body_text: string;
+  header_video_url?: string;
+  buttons?: string[];
 };
 
 function slugifyName(input: string) {
@@ -77,11 +79,14 @@ Deno.serve(async (req) => {
     const language = (body.language ?? "").trim();
     const bodyText = (body.body_text ?? "").trim();
     const category = (body.category ?? "MARKETING").toString();
+    const headerVideoUrl = (body.header_video_url ?? "").trim();
+    const buttons = (body.buttons ?? []).map((b) => (b ?? "").trim()).filter(Boolean);
 
     if (!wabaId) return json(400, { error: "Missing waba_id" });
     if (!rawName || !name) return json(400, { error: "Missing name" });
     if (!language) return json(400, { error: "Missing language" });
     if (!bodyText) return json(400, { error: "Missing body_text" });
+    if (buttons.length > 3) return json(400, { error: "buttons supports up to 3 entries" });
 
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -96,16 +101,35 @@ Deno.serve(async (req) => {
 
     const createUrl = `${GRAPH_BASE}/${wabaId}/message_templates`;
 
+    const components: Array<Record<string, unknown>> = [
+      {
+        type: "BODY",
+        text: bodyText,
+      },
+    ];
+
+    if (headerVideoUrl) {
+      components.unshift({
+        type: "HEADER",
+        format: "VIDEO",
+        example: {
+          header_handle: [headerVideoUrl],
+        },
+      });
+    }
+
+    if (buttons.length > 0) {
+      components.push({
+        type: "BUTTONS",
+        buttons: buttons.map((text) => ({ type: "QUICK_REPLY", text })),
+      });
+    }
+
     const payload = {
       name,
       language,
       category,
-      components: [
-        {
-          type: "BODY",
-          text: bodyText,
-        },
-      ],
+      components,
     };
 
     const res = await fetch(createUrl, {
