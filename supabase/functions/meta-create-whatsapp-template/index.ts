@@ -42,6 +42,7 @@ type Body = {
   language: string;
   body_text: string;
   header_video_url?: string;
+  header_video_handle?: string;
   buttons?: Array<BodyButton | string>;
 };
 
