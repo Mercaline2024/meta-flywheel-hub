@@ -41,6 +41,7 @@ type Body = {
   category?: "MARKETING" | "UTILITY" | "AUTHENTICATION";
   language: string;
   body_text: string;
+  footer_text?: string;
   header_video_url?: string;
   header_video_handle?: string;
   buttons?: Array<BodyButton | string>;
@@ -215,6 +216,7 @@ Deno.serve(async (req) => {
     const name = slugifyName(rawName);
     const language = (body.language ?? "").trim();
     const bodyText = (body.body_text ?? "").trim();
+    const footerText = (body.footer_text ?? "").trim();
     const category = (body.category ?? "MARKETING").toString();
     const headerVideoUrl = (body.header_video_url ?? "").trim();
     const headerVideoHandleInput = (body.header_video_handle ?? "").trim();
@@ -285,6 +287,13 @@ Deno.serve(async (req) => {
         example: {
           header_handle: [headerHandle],
         },
+      });
+    }
+
+    if (footerText) {
+      components.push({
+        type: "FOOTER",
+        text: footerText,
       });
     }
 
