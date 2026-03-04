@@ -116,12 +116,15 @@ Deno.serve(async (req) => {
 
     const createUrl = `${GRAPH_BASE}/${wabaId}/message_templates`;
 
-    const components: Array<Record<string, unknown>> = [
-      {
-        type: "BODY",
-        text: bodyText,
-      },
-    ];
+    const bodyComponent: Record<string, unknown> = {
+      type: "BODY",
+      text: bodyText,
+    };
+
+    const bodyExample = buildBodyExample(bodyText);
+    if (bodyExample) bodyComponent.example = bodyExample;
+
+    const components: Array<Record<string, unknown>> = [bodyComponent];
 
     if (headerVideoUrl) {
       components.unshift({
