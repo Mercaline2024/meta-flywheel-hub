@@ -110,6 +110,82 @@ function sanitizeButtonText(input: string) {
     .slice(0, 25);
 }
 
+function inferVideoMimeTypeFromUrl(url: string) {
+  const clean = url.split("?")[0]?.toLowerCase() ?? "";
+  if (clean.endsWith(".mov")) return "video/quicktime";
+  if (clean.endsWith(".webm")) return "video/webm";
+  return "video/mp4";
+}
+
+function inferVideoFileNameFromUrl(url: string) {
+  try {
+    const parsed = new URL(url);
+    const segment = parsed.pathname.split("/").filter(Boolean).pop();
+    return segment && segment.length > 0 ? segment : "template-video.mp4";
+  } catch {
+    return "template-video.mp4";
+  }
+}
+
+async function uploadTemplateVideoHandle(params: {
+  sourceUrl: string;
+  accessToken: string;
+  appId: string;
+}) {
+  const { sourceUrl, accessToken, appId } = params;
+
+  const mediaRes = await fetch(sourceUrl);
+  if (!mediaRes.ok) {
+    throw new Error(`Unable to download video sample [${mediaRes.status}]`);
+  }
+
+  const videoBytes = await mediaRes.arrayBuffer();
+  if (!videoBytes.byteLength) {
+    throw new Error("Video sample is empty");
+  }
+
+  const fileName = inferVideoFileNameFromUrl(sourceUrl);
+  const fileType = inferVideoMimeTypeFromUrl(sourceUrl);
+
+  const initUrl = new URL(`${GRAPH_BASE}/${appId}/uploads`);
+  initUrl.searchParams.set("file_name", fileName);
+  initUrl.searchParams.set("file_length", String(videoBytes.byteLength));
+  initUrl.searchParams.set("file_type", fileType);
+
+  const initRes = await fetch(initUrl.toString(), {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  const initData = await initRes.json().catch(() => ({}));
+  if (!initRes.ok || !initData?.id) {
+    throw new Error(`Video upload init failed: ${JSON.stringify(initData)}`);
+  }
+
+  const uploadSessionId = String(initData.id).replace(/^upload:/, "");
+
+  const transferRes = await fetch(`${GRAPH_BASE}/${uploadSessionId}`, {
+    method: "POST",
+    headers: {
+      Authorization: `OAuth ${accessToken}`,
+      file_offset: "0",
+      "Content-Type": "application/octet-stream",
+    },
+    body: videoBytes,
+  });
+
+  const transferData = await transferRes.json().catch(() => ({}));
+  const handle = transferData?.h;
+
+  if (!transferRes.ok || !handle) {
+    throw new Error(`Video upload transfer failed: ${JSON.stringify(transferData)}`);
+  }
+
+  return String(handle);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
