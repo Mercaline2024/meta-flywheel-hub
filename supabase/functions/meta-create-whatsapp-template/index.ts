@@ -262,17 +262,17 @@ Deno.serve(async (req) => {
       {
         user_id: userId,
         waba_id: wabaId,
-        template_name: name,
+        template_name: finalTemplateName,
         language,
         category: category ?? null,
-        status: (data?.status ?? null) as any,
-        components: payload.components,
-        raw: { request: payload, response: data },
+        status: (result.data?.status ?? null) as any,
+        components: result.payload.components,
+        raw: { request: result.payload, response: result.data },
       },
       { onConflict: "user_id,waba_id,template_name,language" },
     );
 
-    return json(200, { success: true, template: data });
+    return json(200, { success: true, template: result.data, template_name_used: finalTemplateName });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("meta-create-whatsapp-template error:", message);
