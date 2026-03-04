@@ -164,7 +164,11 @@ Deno.serve(async (req) => {
     if (buttons.length > 0) {
       components.push({
         type: "BUTTONS",
-        buttons: buttons.map((text) => ({ type: "QUICK_REPLY", text })),
+        buttons: buttons.map((button) =>
+          button.type === "URL"
+            ? { type: "URL", text: button.text, url: button.url }
+            : { type: "QUICK_REPLY", text: button.text },
+        ),
       });
     }
 
