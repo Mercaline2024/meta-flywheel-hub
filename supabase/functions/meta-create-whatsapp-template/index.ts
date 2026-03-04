@@ -198,6 +198,7 @@ Deno.serve(async (req) => {
     const SUPABASE_URL = requireEnv("SUPABASE_URL");
     const SUPABASE_ANON_KEY = requireEnvAny(["SUPABASE_ANON_KEY", "SUPABASE_PUBLISHABLE_KEY"]);
     const SUPABASE_SERVICE_ROLE_KEY = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
+    const META_APP_ID = requireEnv("META_APP_ID");
 
     const token = authHeader.replace("Bearer ", "");
 
