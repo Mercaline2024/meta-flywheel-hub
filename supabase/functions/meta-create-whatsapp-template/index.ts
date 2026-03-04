@@ -270,12 +270,20 @@ Deno.serve(async (req) => {
 
     const components: Array<Record<string, unknown>> = [bodyComponent];
 
-    if (headerVideoUrl) {
+    if (headerVideoUrl || headerVideoHandleInput) {
+      const headerHandle = headerVideoHandleInput
+        ? headerVideoHandleInput
+        : await uploadTemplateVideoHandle({
+            sourceUrl: headerVideoUrl,
+            accessToken: conn.access_token,
+            appId: META_APP_ID,
+          });
+
       components.unshift({
         type: "HEADER",
         format: "VIDEO",
         example: {
-          header_handle: [headerVideoUrl],
+          header_handle: [headerHandle],
         },
       });
     }
