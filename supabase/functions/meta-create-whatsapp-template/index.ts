@@ -114,20 +114,20 @@ Deno.serve(async (req) => {
     const buttons = rawButtons
       .map((button): BodyButton | null => {
         if (typeof button === "string") {
-          const text = button.trim();
+          const text = sanitizeButtonText(button);
           return text ? { type: "QUICK_REPLY", text } : null;
         }
 
         if (!button || typeof button !== "object") return null;
 
         if (button.type === "URL") {
-          const text = (button.text ?? "").trim();
+          const text = sanitizeButtonText(button.text ?? "");
           const url = (button.url ?? "").trim();
           if (!text || !url) return null;
           return { type: "URL", text, url };
         }
 
-        const text = (button.text ?? "").trim();
+        const text = sanitizeButtonText(button.text ?? "");
         if (!text) return null;
         return { type: "QUICK_REPLY", text };
       })
