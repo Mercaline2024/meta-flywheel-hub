@@ -216,6 +216,7 @@ Deno.serve(async (req) => {
     const bodyText = (body.body_text ?? "").trim();
     const category = (body.category ?? "MARKETING").toString();
     const headerVideoUrl = (body.header_video_url ?? "").trim();
+    const headerVideoHandleInput = (body.header_video_handle ?? "").trim();
     const rawButtons = Array.isArray(body.buttons) ? body.buttons : [];
     const buttons = rawButtons
       .map((button): BodyButton | null => {
