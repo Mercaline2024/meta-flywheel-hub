@@ -164,9 +164,9 @@ async function uploadTemplateVideoHandle(params: {
     throw new Error(`Video upload init failed: ${JSON.stringify(initData)}`);
   }
 
-  const uploadSessionId = String(initData.id).replace(/^upload:/, "");
+  const uploadSessionId = String(initData.id);
 
-  const transferRes = await fetch(`${GRAPH_BASE}/${uploadSessionId}`, {
+  const transferRes = await fetch(`${GRAPH_BASE}/${encodeURIComponent(uploadSessionId)}`, {
     method: "POST",
     headers: {
       Authorization: `OAuth ${accessToken}`,
