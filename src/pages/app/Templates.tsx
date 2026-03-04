@@ -55,7 +55,7 @@ const presets: TemplatePreset[] = [
     buttons: ["CONOCEME", "STOP /Darme de baja!"],
   },
 ];
-...
+
 function mapCategoryToMeta(category: TemplatePreset["category"]) {
   switch (category) {
     case "Soporte":
