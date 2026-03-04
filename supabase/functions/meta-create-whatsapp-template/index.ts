@@ -212,32 +212,49 @@ Deno.serve(async (req) => {
       });
     }
 
-    const payload = {
-      name,
-      language,
-      category,
-      components,
+    const createTemplateAtMeta = async (templateName: string) => {
+      const payload = {
+        name: templateName,
+        language,
+        category,
+        components,
+      };
+
+      const res = await fetch(createUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${conn.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const text = await res.text();
+      let data: any;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = { raw: text };
+      }
+
+      return { res, data, payload };
     };
 
-    const res = await fetch(createUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${conn.access_token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+    let finalTemplateName = name;
+    let result = await createTemplateAtMeta(finalTemplateName);
 
-    const text = await res.text();
-    let data: any;
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = { raw: text };
+    if (!result.res.ok) {
+      const parsedError = parseMetaError(result.data);
+      const shouldRetryWithNewName = parsedError?.code === 100 && parsedError?.subcode === 2388023;
+
+      if (shouldRetryWithNewName) {
+        finalTemplateName = buildAlternativeTemplateName(name);
+        result = await createTemplateAtMeta(finalTemplateName);
+      }
     }
 
-    if (!res.ok) {
-      return json(400, { error: `Meta template create failed [${res.status}]: ${JSON.stringify(data)}` });
+    if (!result.res.ok) {
+      return json(400, { error: `Meta template create failed [${result.res.status}]: ${JSON.stringify(result.data)}` });
     }
 
     // Best-effort: store locally so UI reflects immediately.
