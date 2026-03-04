@@ -56,6 +56,50 @@ const presets: TemplatePreset[] = [
   },
 ];
 ...
+function mapCategoryToMeta(category: TemplatePreset["category"]) {
+  switch (category) {
+    case "Soporte":
+      return "UTILITY" as const;
+    case "Recordatorio":
+      return "UTILITY" as const;
+    case "Promoción":
+    default:
+      return "MARKETING" as const;
+  }
+}
+
+export default function Templates() {
+  const [creatingId, setCreatingId] = useState<string | null>(null);
+  const [selectedBm, setSelectedBm] = useState<string | null>(null);
+  const [selectedWaba, setSelectedWaba] = useState<string | null>(null);
+
+  const assets = useMetaAssets(null);
+  const wa = useMetaWhatsapp(selectedBm, selectedWaba);
+
+  const byCategory = useMemo(() => {
+    const groups: Record<string, TemplatePreset[]> = { Promoción: [], Recordatorio: [], Soporte: [] };
+    for (const t of presets) groups[t.category].push(t);
+    return groups;
+  }, []);
+
+  const sync = async () => {
+    try {
+      await assets.syncAssets();
+      toast({ title: "Sincronización completada", description: "Activos y plantillas actualizados." });
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "No se pudo sincronizar";
+      toast({ title: "Error al sincronizar", description: message });
+    }
+  };
+
+  const createTemplate = async (t: TemplatePreset) => {
+    if (!selectedWaba) {
+      toast({ title: "Selecciona un WABA", description: "Primero elige BM → WABA para crear plantillas." });
+      return;
+    }
+
+    setCreatingId(t.id);
+    try {
       const { data, error } = await supabase.functions.invoke("meta-create-whatsapp-template", {
         body: {
           waba_id: selectedWaba,
