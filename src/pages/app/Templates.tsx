@@ -63,8 +63,8 @@ const presets: TemplatePreset[] = [
     preview:
       "Hola {{1}} 👋 Soy Luisa Hernández, docente 📚 y empresaria santandereana con 20 años transformando vidas desde la educación y el emprendimiento. Hoy quiero compartirte algo importante para nuestra región 🌿 ¿No deseas recibir más mensajes? Responde STOP y te eliminamos de inmediato ✅",
     buttons: [
-      { type: "URL", text: "🌿 Conóceme", url: "https://linktr.ee/laprofeluisa" },
-      { type: "QUICK_REPLY", text: "🔕 STOP — Darme de baja" },
+      { type: "URL", text: "Conoceme", url: "https://linktr.ee/laprofeluisa" },
+      { type: "QUICK_REPLY", text: "STOP Darme de baja" },
     ],
   },
 ];

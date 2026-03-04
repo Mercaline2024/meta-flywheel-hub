@@ -69,6 +69,17 @@ function buildBodyExample(text: string) {
   return { body_text: [sampleRow] };
 }
 
+function sanitizeButtonText(input: string) {
+  return input
+    .replace(/{{\s*\d+\s*}}/g, "")
+    .replace(/[\r\n\t]+/g, " ")
+    .replace(/[\p{Extended_Pictographic}\uFE0F]/gu, "")
+    .replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ .,!?:;()/_-]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 25);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -103,20 +114,20 @@ Deno.serve(async (req) => {
     const buttons = rawButtons
       .map((button): BodyButton | null => {
         if (typeof button === "string") {
-          const text = button.trim();
+          const text = sanitizeButtonText(button);
           return text ? { type: "QUICK_REPLY", text } : null;
         }
 
         if (!button || typeof button !== "object") return null;
 
         if (button.type === "URL") {
-          const text = (button.text ?? "").trim();
+          const text = sanitizeButtonText(button.text ?? "");
           const url = (button.url ?? "").trim();
           if (!text || !url) return null;
           return { type: "URL", text, url };
         }
 
-        const text = (button.text ?? "").trim();
+        const text = sanitizeButtonText(button.text ?? "");
         if (!text) return null;
         return { type: "QUICK_REPLY", text };
       })
