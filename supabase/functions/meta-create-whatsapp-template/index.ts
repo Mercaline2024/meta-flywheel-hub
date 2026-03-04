@@ -50,6 +50,21 @@ function slugifyName(input: string) {
     .slice(0, 512);
 }
 
+function buildBodyExample(text: string) {
+  const matches = Array.from(text.matchAll(/{{\s*(\d+)\s*}}/g));
+  if (matches.length === 0) return null;
+
+  const maxIndex = matches.reduce((max, m) => {
+    const n = Number.parseInt(m[1] ?? "0", 10);
+    return Number.isFinite(n) ? Math.max(max, n) : max;
+  }, 0);
+
+  if (maxIndex <= 0) return null;
+
+  const sampleRow = Array.from({ length: maxIndex }, (_, i) => `ejemplo_${i + 1}`);
+  return { body_text: [sampleRow] };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
