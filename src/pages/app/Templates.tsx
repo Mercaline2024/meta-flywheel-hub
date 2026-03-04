@@ -27,6 +27,7 @@ type TemplatePreset = {
   category: "Promoción" | "Recordatorio" | "Soporte";
   title: string;
   preview: string;
+  footerText?: string;
   headerVideoUrl?: string;
   buttons?: TemplateButtonPreset[];
 };
@@ -59,12 +60,13 @@ const presets: TemplatePreset[] = [
   {
     id: "t5",
     category: "Promoción",
-    title: "Mensaje especial Luisa Hernández",
+    title: "Mnesaje Profe luisa V1",
     preview:
-      "Hola {{1}} 👋 Soy Luisa Hernández, docente 📚 y empresaria santandereana con 20 años transformando vidas desde la educación y el emprendimiento. Hoy quiero compartirte algo importante para nuestra región 🌿 ¿No deseas recibir más mensajes? Responde STOP y te eliminamos de inmediato ✅",
+      "Hola 👋\n\nSoy La Profe Luisa, docente 📚 y empresaria santandereana.\n\nLlevo 20 años trabajando por la educación y el emprendimiento sostenible.\n\nQuiero con tu apoyo, trabajar desde el Congreso 🏛️ por más oportunidades para nuestra región 🤝.\n\nEste 8 de marzo 🗳️ pide el tarjetón a la Cámara de Representantes, marca la letra L del Partido Liberal y el número 102 ✅.",
+    footerText: "Conoce más de mí",
     headerVideoUrl: "https://upload.ecomdrop.io/images/2026/03/04/VIDEO-FINAL-ELEJIDA.mp4",
     buttons: [
-      { type: "URL", text: "Conoceme", url: "https://linktr.ee/laprofeluisa" },
+      { type: "QUICK_REPLY", text: "Conoceme" },
       { type: "QUICK_REPLY", text: "STOP Darme de baja" },
     ],
   },
@@ -121,6 +123,7 @@ export default function Templates() {
           category: mapCategoryToMeta(t.category),
           language: "es",
           body_text: t.preview,
+          footer_text: t.footerText,
           header_video_url: t.headerVideoUrl,
           buttons: t.buttons,
         },
