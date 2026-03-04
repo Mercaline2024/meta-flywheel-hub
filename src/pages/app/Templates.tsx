@@ -16,6 +16,8 @@ type TemplatePreset = {
   category: "Promoción" | "Recordatorio" | "Soporte";
   title: string;
   preview: string;
+  headerVideoUrl?: string;
+  buttons?: string[];
 };
 
 const presets: TemplatePreset[] = [
@@ -43,52 +45,17 @@ const presets: TemplatePreset[] = [
     title: "Carrito abandonado",
     preview: "Vimos que dejaste productos en tu carrito. ¿Te ayudo a finalizar?",
   },
+  {
+    id: "t5",
+    category: "Promoción",
+    title: "Mensaje especial Luisa Hernández",
+    preview:
+      "Hola {{1}} 👋 Soy Luisa Hernández, docente 📚 y empresaria santandereana con 20 años transformando vidas desde la educación y el emprendimiento. Hoy quiero compartirte algo importante para nuestra región 🌿 👇 Mira este mensaje especial para ti: [VIDEO] Conoce todo sobre este proyecto 👉 https://linktr.ee/laprofeluisa —————————————— ¿No deseas recibir más mensajes? Responde STOP y te eliminamos de inmediato ✅",
+    headerVideoUrl: "https://upload.ecomdrop.io/images/2026/03/04/VIDEO-FINAL-ELEJIDA.mp4",
+    buttons: ["CONOCEME", "STOP /Darme de baja!"],
+  },
 ];
-
-function mapCategoryToMeta(category: TemplatePreset["category"]) {
-  switch (category) {
-    case "Soporte":
-      return "UTILITY" as const;
-    case "Recordatorio":
-      return "UTILITY" as const;
-    case "Promoción":
-    default:
-      return "MARKETING" as const;
-  }
-}
-
-export default function Templates() {
-  const [creatingId, setCreatingId] = useState<string | null>(null);
-  const [selectedBm, setSelectedBm] = useState<string | null>(null);
-  const [selectedWaba, setSelectedWaba] = useState<string | null>(null);
-
-  const assets = useMetaAssets(null);
-  const wa = useMetaWhatsapp(selectedBm, selectedWaba);
-
-  const byCategory = useMemo(() => {
-    const groups: Record<string, TemplatePreset[]> = { Promoción: [], Recordatorio: [], Soporte: [] };
-    for (const t of presets) groups[t.category].push(t);
-    return groups;
-  }, []);
-
-  const sync = async () => {
-    try {
-      await assets.syncAssets();
-      toast({ title: "Sincronización completada", description: "Activos y plantillas actualizados." });
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : "No se pudo sincronizar";
-      toast({ title: "Error al sincronizar", description: message });
-    }
-  };
-
-  const createTemplate = async (t: TemplatePreset) => {
-    if (!selectedWaba) {
-      toast({ title: "Selecciona un WABA", description: "Primero elige BM → WABA para crear plantillas." });
-      return;
-    }
-
-    setCreatingId(t.id);
-    try {
+...
       const { data, error } = await supabase.functions.invoke("meta-create-whatsapp-template", {
         body: {
           waba_id: selectedWaba,
@@ -96,6 +63,8 @@ export default function Templates() {
           category: mapCategoryToMeta(t.category),
           language: "es",
           body_text: t.preview,
+          header_video_url: t.headerVideoUrl,
+          buttons: t.buttons,
         },
       });
       if (error) throw error;
