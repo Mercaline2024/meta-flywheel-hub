@@ -31,6 +31,10 @@ function requireEnvAny(names: string[]) {
   throw new Error(`${names[0]} is not configured`);
 }
 
+type BodyButton =
+  | { type: "QUICK_REPLY"; text: string }
+  | { type: "URL"; text: string; url: string };
+
 type Body = {
   waba_id: string;
   name: string;
@@ -38,7 +42,7 @@ type Body = {
   language: string;
   body_text: string;
   header_video_url?: string;
-  buttons?: string[];
+  buttons?: Array<BodyButton | string>;
 };
 
 function slugifyName(input: string) {
