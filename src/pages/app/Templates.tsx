@@ -62,6 +62,7 @@ const presets: TemplatePreset[] = [
     title: "Mensaje especial Luisa Hernández",
     preview:
       "Hola {{1}} 👋 Soy Luisa Hernández, docente 📚 y empresaria santandereana con 20 años transformando vidas desde la educación y el emprendimiento. Hoy quiero compartirte algo importante para nuestra región 🌿 ¿No deseas recibir más mensajes? Responde STOP y te eliminamos de inmediato ✅",
+    headerVideoUrl: "https://upload.ecomdrop.io/images/2026/03/04/VIDEO-FINAL-ELEJIDA.mp4",
     buttons: [
       { type: "URL", text: "Conoceme", url: "https://linktr.ee/laprofeluisa" },
       { type: "QUICK_REPLY", text: "STOP Darme de baja" },
