@@ -153,6 +153,18 @@ export default function Campaigns() {
     refetchInterval: 10000,
   });
 
+  const phoneNumbersQuery = useQuery({
+    queryKey: ["whatsapp", "phone-numbers", selectedWaba ?? "none"],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("whatsapp-list-phone-numbers", {
+        body: { waba_id: selectedWaba },
+      });
+      if (error) throw error;
+      return (data?.phone_numbers ?? []) as WhatsappPhoneNumberOption[];
+    },
+    enabled: !!selectedWaba,
+  });
+
   const createCampaign = useMutation({
     mutationFn: async () => {
       const scheduledIso = new Date(scheduledAt).toISOString();
