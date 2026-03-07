@@ -211,6 +211,12 @@ export default function Campaigns() {
   });
 
   const templates = wa.templates.data ?? [];
+  const phoneNumbers = phoneNumbersQuery.data ?? [];
+  const sendReadyPhoneNumbers = useMemo(
+    () => phoneNumbers.filter((phoneNumber) => phoneNumber.is_send_ready),
+    [phoneNumbers],
+  );
+
   const canCreate = Boolean(selectedWaba && selectedTemplateName && phoneNumberId.trim() && contacts.length > 0 && scheduledAt);
 
   const campaigns = campaignsQuery.data ?? [];
