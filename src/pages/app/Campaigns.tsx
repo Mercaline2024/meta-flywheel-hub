@@ -37,6 +37,17 @@ type CampaignApiRow = {
   };
 };
 
+type WhatsappPhoneNumberOption = {
+  id: string;
+  display_phone_number: string;
+  verified_name: string;
+  quality_rating: string;
+  status: string;
+  name_status: string;
+  code_verification_status: string;
+  is_send_ready: boolean;
+};
+
 function toLocalDatetimeInputValue(date: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
