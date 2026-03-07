@@ -263,6 +263,7 @@ export default function Campaigns() {
                   setSelectedBm(value);
                   setSelectedWaba(null);
                   setSelectedTemplateName("");
+                  setPhoneNumberId("");
                 }}
               >
                 <SelectTrigger>
