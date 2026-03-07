@@ -267,6 +267,7 @@ export default function Campaigns() {
                 onValueChange={(value) => {
                   setSelectedWaba(value);
                   setSelectedTemplateName("");
+                  setPhoneNumberId("");
                 }}
                 disabled={!selectedBm}
               >
