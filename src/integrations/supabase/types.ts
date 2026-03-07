@@ -188,6 +188,128 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_campaign_recipients: {
+        Row: {
+          accepted_at: string | null
+          attempt_count: number
+          campaign_id: string
+          created_at: string
+          custom_fields: Json
+          delivered_at: string | null
+          error_message: string | null
+          full_name: string | null
+          id: string
+          meta_message_id: string | null
+          next_attempt_at: string | null
+          opt_in: boolean
+          phone_number: string
+          status_api: string
+          status_delivery: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          attempt_count?: number
+          campaign_id: string
+          created_at?: string
+          custom_fields?: Json
+          delivered_at?: string | null
+          error_message?: string | null
+          full_name?: string | null
+          id?: string
+          meta_message_id?: string | null
+          next_attempt_at?: string | null
+          opt_in?: boolean
+          phone_number: string
+          status_api?: string
+          status_delivery?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          attempt_count?: number
+          campaign_id?: string
+          created_at?: string
+          custom_fields?: Json
+          delivered_at?: string | null
+          error_message?: string | null
+          full_name?: string | null
+          id?: string
+          meta_message_id?: string | null
+          next_attempt_at?: string | null
+          opt_in?: boolean
+          phone_number?: string
+          status_api?: string
+          status_delivery?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_campaign_recipients_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "whatsapp_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_campaigns: {
+        Row: {
+          created_at: string
+          delivered_count: number
+          failed_count: number
+          id: string
+          phone_number_id: string
+          rate_limit_per_minute: number
+          scheduled_at: string
+          sent_api_count: number
+          status: string
+          template_language: string
+          template_name: string
+          total_recipients: number
+          updated_at: string
+          user_id: string
+          waba_id: string
+        }
+        Insert: {
+          created_at?: string
+          delivered_count?: number
+          failed_count?: number
+          id?: string
+          phone_number_id: string
+          rate_limit_per_minute?: number
+          scheduled_at: string
+          sent_api_count?: number
+          status?: string
+          template_language?: string
+          template_name: string
+          total_recipients?: number
+          updated_at?: string
+          user_id: string
+          waba_id: string
+        }
+        Update: {
+          created_at?: string
+          delivered_count?: number
+          failed_count?: number
+          id?: string
+          phone_number_id?: string
+          rate_limit_per_minute?: number
+          scheduled_at?: string
+          sent_api_count?: number
+          status?: string
+          template_language?: string
+          template_name?: string
+          total_recipients?: number
+          updated_at?: string
+          user_id?: string
+          waba_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
