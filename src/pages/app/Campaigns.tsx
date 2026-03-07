@@ -37,6 +37,17 @@ type CampaignApiRow = {
   };
 };
 
+type WhatsappPhoneNumberOption = {
+  id: string;
+  display_phone_number: string;
+  verified_name: string;
+  quality_rating: string;
+  status: string;
+  name_status: string;
+  code_verification_status: string;
+  is_send_ready: boolean;
+};
+
 function toLocalDatetimeInputValue(date: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
@@ -142,6 +153,18 @@ export default function Campaigns() {
     refetchInterval: 10000,
   });
 
+  const phoneNumbersQuery = useQuery({
+    queryKey: ["whatsapp", "phone-numbers", selectedWaba ?? "none"],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("whatsapp-list-phone-numbers", {
+        body: { waba_id: selectedWaba },
+      });
+      if (error) throw error;
+      return (data?.phone_numbers ?? []) as WhatsappPhoneNumberOption[];
+    },
+    enabled: !!selectedWaba,
+  });
+
   const createCampaign = useMutation({
     mutationFn: async () => {
       const scheduledIso = new Date(scheduledAt).toISOString();
@@ -188,6 +211,12 @@ export default function Campaigns() {
   });
 
   const templates = wa.templates.data ?? [];
+  const phoneNumbers = phoneNumbersQuery.data ?? [];
+  const sendReadyPhoneNumbers = useMemo(
+    () => phoneNumbers.filter((phoneNumber) => phoneNumber.is_send_ready),
+    [phoneNumbers],
+  );
+
   const canCreate = Boolean(selectedWaba && selectedTemplateName && phoneNumberId.trim() && contacts.length > 0 && scheduledAt);
 
   const campaigns = campaignsQuery.data ?? [];
@@ -234,6 +263,7 @@ export default function Campaigns() {
                   setSelectedBm(value);
                   setSelectedWaba(null);
                   setSelectedTemplateName("");
+                  setPhoneNumberId("");
                 }}
               >
                 <SelectTrigger>
@@ -256,6 +286,7 @@ export default function Campaigns() {
                 onValueChange={(value) => {
                   setSelectedWaba(value);
                   setSelectedTemplateName("");
+                  setPhoneNumberId("");
                 }}
                 disabled={!selectedBm}
               >
@@ -298,13 +329,37 @@ export default function Campaigns() {
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
-                <Label htmlFor="phone-number-id">Phone Number ID</Label>
-                <Input
-                  id="phone-number-id"
-                  placeholder="Ej: 123456789012345"
+                <Label>Número de WhatsApp remitente</Label>
+                <Select
                   value={phoneNumberId}
-                  onChange={(event) => setPhoneNumberId(event.target.value)}
-                />
+                  onValueChange={setPhoneNumberId}
+                  disabled={!selectedWaba || phoneNumbersQuery.isLoading || sendReadyPhoneNumbers.length === 0}
+                >
+                  <SelectTrigger>
+                    <SelectValue
+                      placeholder={
+                        !selectedWaba
+                          ? "Selecciona WABA primero"
+                          : phoneNumbersQuery.isLoading
+                            ? "Cargando números..."
+                            : sendReadyPhoneNumbers.length === 0
+                              ? "Sin números aptos para envío"
+                              : "Selecciona número remitente"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sendReadyPhoneNumbers.map((number) => (
+                      <SelectItem key={number.id} value={number.id}>
+                        {number.display_phone_number || number.id}
+                        {number.verified_name ? ` · ${number.verified_name}` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedWaba && !phoneNumbersQuery.isLoading && sendReadyPhoneNumbers.length === 0 ? (
+                  <div className="text-xs text-muted-foreground">No hay números conectados y aptos para enviar en este WABA.</div>
+                ) : null}
               </div>
 
               <div className="space-y-2">
