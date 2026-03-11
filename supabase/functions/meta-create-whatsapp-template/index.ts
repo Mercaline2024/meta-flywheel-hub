@@ -41,6 +41,7 @@ type Body = {
   category?: "MARKETING" | "UTILITY" | "AUTHENTICATION";
   language: string;
   body_text: string;
+  header_text?: string;
   footer_text?: string;
   header_video_url?: string;
   header_video_handle?: string;
