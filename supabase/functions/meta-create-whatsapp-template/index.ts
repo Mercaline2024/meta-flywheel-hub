@@ -41,6 +41,7 @@ type Body = {
   category?: "MARKETING" | "UTILITY" | "AUTHENTICATION";
   language: string;
   body_text: string;
+  header_text?: string;
   footer_text?: string;
   header_video_url?: string;
   header_video_handle?: string;
@@ -98,6 +99,20 @@ function buildBodyExample(text: string) {
 
   const sampleRow = Array.from({ length: maxIndex }, (_, i) => `ejemplo_${i + 1}`);
   return { body_text: [sampleRow] };
+}
+
+function buildHeaderExample(text: string) {
+  const matches = Array.from(text.matchAll(/{{\s*(\d+)\s*}}/g));
+  if (matches.length === 0) return null;
+
+  const maxIndex = matches.reduce((max, m) => {
+    const n = Number.parseInt(m[1] ?? "0", 10);
+    return Number.isFinite(n) ? Math.max(max, n) : max;
+  }, 0);
+
+  if (maxIndex <= 0) return null;
+
+  return { header_text: Array.from({ length: maxIndex }, (_, i) => `ejemplo_${i + 1}`) };
 }
 
 function sanitizeButtonText(input: string) {
@@ -216,6 +231,7 @@ Deno.serve(async (req) => {
     const name = slugifyName(rawName);
     const language = (body.language ?? "").trim();
     const bodyText = (body.body_text ?? "").trim();
+    const headerText = (body.header_text ?? "").trim();
     const footerText = (body.footer_text ?? "").trim();
     const category = (body.category ?? "MARKETING").toString();
     const headerVideoUrl = (body.header_video_url ?? "").trim();
@@ -288,6 +304,17 @@ Deno.serve(async (req) => {
           header_handle: [headerHandle],
         },
       });
+    } else if (headerText) {
+      const headerComponent: Record<string, unknown> = {
+        type: "HEADER",
+        format: "TEXT",
+        text: headerText,
+      };
+
+      const headerExample = buildHeaderExample(headerText);
+      if (headerExample) headerComponent.example = headerExample;
+
+      components.unshift(headerComponent);
     }
 
     if (footerText) {
