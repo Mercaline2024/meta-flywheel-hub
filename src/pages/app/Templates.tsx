@@ -127,7 +127,7 @@ const presets: TemplatePreset[] = [
   },
 ];
 
-const recommendedOrder = ["luisa-v6", "luisa-v3", "luisa-v2", "luisa-v5", "luisa-v4", "luisa-v1"];
+const recommendedOrder = ["confirmacion-landing", "luisa-v6", "luisa-v3", "luisa-v2", "luisa-v5", "luisa-v4", "luisa-v1"];
 
 function mapCategoryToMeta(category: TemplatePreset["category"]) {
   switch (category) {
