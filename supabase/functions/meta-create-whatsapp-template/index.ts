@@ -231,6 +231,7 @@ Deno.serve(async (req) => {
     const name = slugifyName(rawName);
     const language = (body.language ?? "").trim();
     const bodyText = (body.body_text ?? "").trim();
+    const headerText = (body.header_text ?? "").trim();
     const footerText = (body.footer_text ?? "").trim();
     const category = (body.category ?? "MARKETING").toString();
     const headerVideoUrl = (body.header_video_url ?? "").trim();
