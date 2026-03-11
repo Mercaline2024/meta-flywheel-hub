@@ -195,16 +195,17 @@ export default function Templates() {
     for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
       try {
         const invokePromise = supabase.functions.invoke("meta-create-whatsapp-template", {
-          body: {
-            waba_id: selectedWaba,
-            name: template.title,
-            category: mapCategoryToMeta(template.category),
-            language: "es",
-            body_text: template.preview,
-            footer_text: template.footerText,
-            header_video_url: template.headerVideoUrl,
-            buttons: template.buttons,
-          },
+            body: {
+              waba_id: selectedWaba,
+              name: template.title,
+              category: mapCategoryToMeta(template.category),
+              language: "es",
+              body_text: template.preview,
+              header_text: template.headerText,
+              footer_text: template.footerText,
+              header_video_url: template.headerVideoUrl,
+              buttons: template.buttons,
+            },
         });
 
         const { data, error } = await withTimeout(invokePromise, 45000);
