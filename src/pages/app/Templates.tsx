@@ -112,6 +112,19 @@ const presets: TemplatePreset[] = [
       { type: "QUICK_REPLY", text: "STOP Darme de baja" },
     ],
   },
+  {
+    id: "confirmacion-landing",
+    category: "Promoción",
+    title: "confirmacion_landing",
+    headerText: "CONFIRMA TU PEDIDO",
+    preview:
+      "¡Hola, {{1}}! 😊 Soy {{2}}, de la tienda {{3}}. Espero que estés bien.\n\nAquí te detallo la información de tu compra realizada hoy:\n\n🌟 Producto(s): {{4}}\n\n💵 Total a pagar: {{5}}\n\n📍 Dirección de Envío: {{6}}\n\n❗ Importante: Para asegurar la correcta entrega y seguridad de tu pedido, no enviamos productos sin confirmación previa. Por favor, verifica que todos los detalles estén correctos.\n\n🚚 El envío es gratuito y tienes la opción de pagar contraentrega.\n\n✨ Agradecemos mucho tu preferencia y tu confianza en nosotros. ¡Te deseamos un excelente día!",
+    footerText: "Selecciona una opción",
+    buttons: [
+      { type: "QUICK_REPLY", text: "CONFIMAR PEDIDO" },
+      { type: "QUICK_REPLY", text: "MODIFICAR DATOS" },
+    ],
+  },
 ];
 
 const recommendedOrder = ["luisa-v6", "luisa-v3", "luisa-v2", "luisa-v5", "luisa-v4", "luisa-v1"];
