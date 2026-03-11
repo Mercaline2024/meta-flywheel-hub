@@ -27,6 +27,7 @@ type TemplatePreset = {
   category: "Promoción" | "Recordatorio" | "Soporte";
   title: string;
   preview: string;
+  headerText?: string;
   footerText?: string;
   headerVideoUrl?: string;
   buttons?: TemplateButtonPreset[];
