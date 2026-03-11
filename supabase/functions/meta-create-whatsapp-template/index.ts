@@ -304,6 +304,17 @@ Deno.serve(async (req) => {
           header_handle: [headerHandle],
         },
       });
+    } else if (headerText) {
+      const headerComponent: Record<string, unknown> = {
+        type: "HEADER",
+        format: "TEXT",
+        text: headerText,
+      };
+
+      const headerExample = buildHeaderExample(headerText);
+      if (headerExample) headerComponent.example = headerExample;
+
+      components.unshift(headerComponent);
     }
 
     if (footerText) {
