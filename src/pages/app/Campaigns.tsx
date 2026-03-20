@@ -1,6 +1,7 @@
-import { Bot, MessageCircleDashed } from "lucide-react";
+import { Bot, MessageCircleDashed, SearchCheck } from "lucide-react";
 
 import AICampaignBuilder from "@/components/campaigns/AICampaignBuilder";
+import MarketResearchModule from "@/components/campaigns/MarketResearchModule";
 import WhatsappCampaignScheduler from "@/components/campaigns/WhatsappCampaignScheduler";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,8 +19,12 @@ export default function Campaigns() {
         <Badge variant="secondary">Automatización activa</Badge>
       </div>
 
-      <Tabs defaultValue="ads-ai" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 md:w-auto">
+      <Tabs defaultValue="market-research" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3 md:w-auto">
+          <TabsTrigger value="market-research" className="gap-2">
+            <SearchCheck className="h-4 w-4" aria-hidden="true" />
+            Investigación
+          </TabsTrigger>
           <TabsTrigger value="ads-ai" className="gap-2">
             <Bot className="h-4 w-4" aria-hidden="true" />
             Ads con IA
@@ -29,6 +34,10 @@ export default function Campaigns() {
             WhatsApp programado
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="market-research">
+          <MarketResearchModule />
+        </TabsContent>
 
         <TabsContent value="ads-ai">
           <AICampaignBuilder />
