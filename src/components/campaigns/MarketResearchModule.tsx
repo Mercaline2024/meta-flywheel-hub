@@ -322,18 +322,20 @@ export default function MarketResearchModule() {
                 <h3 className="font-medium">Playbook de WhatsApp</h3>
                 <p className="mt-2 text-muted-foreground">Oferta recomendada: {result.playbook.offer_strategy ?? "No definida"}</p>
                 <div className="mt-3 grid gap-3 md:grid-cols-2">
-                  {[
-                    ["Apertura", result.playbook.whatsapp_flow?.opening],
-                    ["Calificación", result.playbook.whatsapp_flow?.qualification],
-                    ["Pitch", result.playbook.whatsapp_flow?.pitch],
-                    ["Manejo de objeciones", result.playbook.whatsapp_flow?.objection_handling],
-                    ["Cierre", result.playbook.whatsapp_flow?.closing],
-                    ["Seguimiento", result.playbook.whatsapp_flow?.follow_up],
-                  ].map(([title, lines]) => (
+                  {(
+                    [
+                      ["Apertura", result.playbook.whatsapp_flow?.opening],
+                      ["Calificación", result.playbook.whatsapp_flow?.qualification],
+                      ["Pitch", result.playbook.whatsapp_flow?.pitch],
+                      ["Manejo de objeciones", result.playbook.whatsapp_flow?.objection_handling],
+                      ["Cierre", result.playbook.whatsapp_flow?.closing],
+                      ["Seguimiento", result.playbook.whatsapp_flow?.follow_up],
+                    ] as Array<[string, string[] | undefined]>
+                  ).map(([title, lines]) => (
                     <div key={title} className="rounded-md border bg-secondary/20 p-3">
                       <p className="font-medium">{title}</p>
                       <ul className="mt-1 list-disc space-y-1 pl-5 text-muted-foreground">
-                        {(lines as string[] | undefined)?.map((line, index) => <li key={`${title}-${index}`}>{line}</li>)}
+                        {lines?.map((line, index) => <li key={`${title}-${index}`}>{line}</li>)}
                       </ul>
                     </div>
                   ))}
