@@ -14,6 +14,98 @@ export type Database = {
   }
   public: {
     Tables: {
+      market_research_briefs: {
+        Row: {
+          competitor_urls: string[]
+          created_at: string
+          customer_notes: string | null
+          id: string
+          niche: string
+          product_name: string
+          product_price: number | null
+          product_url: string | null
+          status: string
+          target_countries: string[]
+          updated_at: string
+          user_id: string
+          value_proposition: string | null
+        }
+        Insert: {
+          competitor_urls?: string[]
+          created_at?: string
+          customer_notes?: string | null
+          id?: string
+          niche: string
+          product_name: string
+          product_price?: number | null
+          product_url?: string | null
+          status?: string
+          target_countries?: string[]
+          updated_at?: string
+          user_id: string
+          value_proposition?: string | null
+        }
+        Update: {
+          competitor_urls?: string[]
+          created_at?: string
+          customer_notes?: string | null
+          id?: string
+          niche?: string
+          product_name?: string
+          product_price?: number | null
+          product_url?: string | null
+          status?: string
+          target_countries?: string[]
+          updated_at?: string
+          user_id?: string
+          value_proposition?: string | null
+        }
+        Relationships: []
+      }
+      market_research_runs: {
+        Row: {
+          brief_id: string
+          created_at: string
+          id: string
+          source_count: number
+          sources: Json
+          status: string
+          synthesis: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brief_id: string
+          created_at?: string
+          id?: string
+          source_count?: number
+          sources?: Json
+          status?: string
+          synthesis?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brief_id?: string
+          created_at?: string
+          id?: string
+          source_count?: number
+          sources?: Json
+          status?: string
+          synthesis?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_research_runs_brief_id_fkey"
+            columns: ["brief_id"]
+            isOneToOne: false
+            referencedRelation: "market_research_briefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meta_ad_accounts: {
         Row: {
           created_at: string
@@ -309,6 +401,54 @@ export type Database = {
           waba_id?: string
         }
         Relationships: []
+      }
+      whatsapp_sales_playbooks: {
+        Row: {
+          brief_id: string
+          created_at: string
+          id: string
+          playbook: Json
+          run_id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brief_id: string
+          created_at?: string
+          id?: string
+          playbook?: Json
+          run_id: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brief_id?: string
+          created_at?: string
+          id?: string
+          playbook?: Json
+          run_id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_sales_playbooks_brief_id_fkey"
+            columns: ["brief_id"]
+            isOneToOne: false
+            referencedRelation: "market_research_briefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_sales_playbooks_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "market_research_runs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
